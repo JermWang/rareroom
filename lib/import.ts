@@ -212,6 +212,9 @@ export type StoredCard = {
   name: string;
   setName: string;
   number?: string;
+  rarity?: string;
+  type?: CardType;
+  generation?: string;
   imageUrl: string;
   status: ImportStatus;
   qty: number;
@@ -254,9 +257,9 @@ export function storedToCollectorCard(c: StoredCard): CollectorCard {
     name: c.name,
     setName: c.setName || "Imported",
     cardNumber: c.number || "",
-    rarity: "Imported",
-    type: "Colorless",
-    generation: "",
+    rarity: c.rarity || "Imported",
+    type: c.type || "Colorless",
+    generation: c.generation || "",
     condition: "—",
     language: "English",
     edition: "Imported",

@@ -22,7 +22,7 @@ export default function AuthPage() {
 
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: `${window.location.origin}/binder` }
+      options: { emailRedirectTo: `${window.location.origin}/auth/callback?next=/binder` }
     });
 
     setStatus(error ? error.message : "Magic link sent. Check your inbox.");

@@ -6,9 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "db:push": "node scripts/apply-supabase-schema.mjs"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "2.107.0",
     "clsx": "2.1.1",
     "lucide-react": "0.468.0",
@@ -18,9 +20,11 @@
   },
   "devDependencies": {
     "@types/node": "20.17.57",
+    "@types/pg": "^8.20.0",
     "@types/react": "19.0.12",
     "@types/react-dom": "19.0.4",
     "autoprefixer": "10.4.21",
+    "pg": "^8.21.0",
     "playwright": "^1.60.0",
     "postcss": "8.5.15",
     "tailwindcss": "3.4.17",

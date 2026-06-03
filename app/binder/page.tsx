@@ -5,16 +5,35 @@ import { Plus, Upload } from "lucide-react";
 import { ActivityRail, Button, CardTile, PageShell, SearchBar, SectionHeader, Stat, cx } from "@/components/ui";
 import { CollectorCard, cards, filters, isVerified } from "@/lib/data";
 import { loadImportedAsCards } from "@/lib/import";
+import { fetchUserBinderCards } from "@/lib/binder-db";
 
 export default function BinderPage() {
   const [active, setActive] = useState("All Cards");
+  const [usingSupabase, setUsingSupabase] = useState(false);
   // Cards imported on this device (localStorage) appear first as "recently added".
   const [imported, setImported] = useState<CollectorCard[]>([]);
   useEffect(() => {
-    setImported(loadImportedAsCards());
+    let cancelled = false;
+
+    async function loadBinder() {
+      const remoteCards = await fetchUserBinderCards();
+      if (cancelled) return;
+      if (remoteCards) {
+        setImported(remoteCards);
+        setUsingSupabase(true);
+      } else {
+        setImported(loadImportedAsCards());
+        setUsingSupabase(false);
+      }
+    }
+
+    loadBinder();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const allCards = useMemo(() => [...imported, ...cards], [imported]);
+  const allCards = useMemo(() => (usingSupabase ? imported : [...imported, ...cards]), [imported, usingSupabase]);
 
   const visibleCards = useMemo(() => {
     if (active === "For Trade") return allCards.filter((card) => card.status === "for_trade");

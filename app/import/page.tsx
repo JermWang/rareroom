@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 import { Button, PageShell, SectionHeader, Stat, cx } from "@/components/ui";
 import { typePalette } from "@/lib/data";
+import { saveStoredCardsToSupabase } from "@/lib/binder-db";
+import { supabase } from "@/lib/supabase";
 import {
   IMPORT_STORAGE_KEY,
   ImportStatus,
@@ -75,6 +77,8 @@ export default function ImportPage() {
 
   const [imported, setImported] = useState<StoredCard[]>([]);
   const [savedCount, setSavedCount] = useState(0);
+  const [saveMessage, setSaveMessage] = useState("");
+  const [saving, setSaving] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -151,7 +155,7 @@ export default function ImportPage() {
     setRows((current) => current.filter((r) => r.key !== key));
   }
 
-  function addToBinder() {
+  async function addToBinder() {
     const additions: StoredCard[] = rows
       .filter((r) => r.imageUrl)
       .map((r) => ({
@@ -159,10 +163,25 @@ export default function ImportPage() {
         name: r.matchName ?? r.name,
         setName: r.setName ?? r.set ?? "",
         number: r.number,
+        rarity: r.rarity,
+        type: r.type,
+        generation: "",
         imageUrl: r.imageUrl as string,
         status: r.status,
         qty: r.qty
       }));
+
+    setSaving(true);
+    const remote = await saveStoredCardsToSupabase(additions);
+    setSaving(false);
+
+    if (remote.saved) {
+      setSavedCount(remote.count);
+      setSaveMessage(`Added ${remote.count} cards to your online binder.`);
+      setRows([]);
+      setPasteText("");
+      return;
+    }
 
     const merged = new Map(imported.map((c) => [`${c.id}-${c.status}`, { ...c }]));
     for (const add of additions) {
@@ -175,6 +194,7 @@ export default function ImportPage() {
     saveImported(next);
     setImported(next);
     setSavedCount(additions.reduce((sum, a) => sum + a.qty, 0));
+    setSaveMessage(remote.reason ?? "Saved locally on this device.");
     setRows([]);
     setPasteText("");
   }
@@ -404,10 +424,10 @@ export default function ImportPage() {
                     {unmatchedCount > 0 && <span className="text-danger">{unmatchedCount} unmatched</span>}
                     <span>{totalCards} cards total</span>
                   </div>
-                  <Button onClick={addToBinder} disabled={matchedCount === 0}>
-                    <CheckCircle2 size={16} />
-                    Add {totalCards} to binder
-                  </Button>
+                <Button onClick={addToBinder} disabled={matchedCount === 0 || saving}>
+                  <CheckCircle2 size={16} />
+                    {saving ? "Saving..." : `Add ${totalCards} to binder`}
+                </Button>
                 </div>
               </div>
             )}
@@ -418,7 +438,7 @@ export default function ImportPage() {
             {savedCount > 0 && (
               <div className="flex items-center gap-2 rounded-xl border border-mint/30 bg-mint/10 p-3 text-sm font-black text-mint">
                 <CheckCircle2 size={18} />
-                Added {savedCount} cards to your binder.
+                {saveMessage || `Added ${savedCount} cards to your binder.`}
               </div>
             )}
 
@@ -451,7 +471,11 @@ export default function ImportPage() {
                   ))}
                 </div>
               )}
-              <p className="mt-3 text-[11px] leading-5 text-white/35">Saved to this device ({IMPORT_STORAGE_KEY}). Wire to Supabase user_cards for real accounts.</p>
+              <p className="mt-3 text-[11px] leading-5 text-white/35">
+                {supabase
+                  ? "Signed-in imports save to your online binder. Guests keep a local copy on this device."
+                  : `Saved to this device (${IMPORT_STORAGE_KEY}). Add Supabase env vars to enable online binders.`}
+              </p>
             </div>
 
             <div className="glass rounded-2xl p-4">

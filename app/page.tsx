@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, BadgeCheck, BookOpen, CheckCircle2, Gem, Search, ShieldCheck, Sparkles, UploadCloud } from "lucide-react";
-import { AppPreview, Footer, PokeballIcon } from "@/components/ui";
+import { AppPreview, Footer } from "@/components/ui";
 
 const tickerItems = [
   { name: "Charizard", value: "$420", delta: "+12%" },
@@ -11,7 +11,18 @@ const tickerItems = [
   { name: "Proof", value: "on", delta: "active" }
 ];
 
-const partnerBrands = ["TCGdex", "Pokemon TCG API", "Supabase", "Vercel", "Phantom", "WalletConnect", "Solana", "Stripe", "Playwright", "Next.js"];
+const partnerBrands = [
+  { name: "TCGdex", logo: "/images/brands/tcgdex.svg" },
+  { name: "Pokemon TCG API", logo: "/images/brands/pokemon-tcg-api.png" },
+  { name: "Supabase", logo: "/images/brands/supabase.svg" },
+  { name: "Vercel", logo: "/images/brands/vercel.svg" },
+  { name: "Phantom", logo: "/images/brands/phantom.svg" },
+  { name: "WalletConnect", logo: "/images/brands/walletconnect.svg" },
+  { name: "Solana", logo: "/images/brands/solana.svg" },
+  { name: "Stripe", logo: "/images/brands/stripe.svg" },
+  { name: "Playwright", logo: "/images/brands/playwright.svg" },
+  { name: "Next.js", logo: "/images/brands/nextdotjs.svg" }
+];
 
 const steps = [
   { title: "Import", copy: "Bring in cards from lists, CSV exports, live search, or manual adds.", icon: UploadCloud },
@@ -95,7 +106,9 @@ export default function LandingPage() {
                 </span>
               </div>
             </div>
-            <AppPreview />
+            <div className="legacy-preview-frame">
+              <AppPreview />
+            </div>
           </div>
         </section>
 
@@ -206,9 +219,9 @@ function PartnerMarquee() {
       <span className="partner-label">Built with the collector stack</span>
       <div className="partner-track">
         {row.map((brand, index) => (
-          <span key={`${brand}-${index}`}>
-            <PokeballIcon size={18} />
-            {brand}
+          <span key={`${brand.name}-${index}`}>
+            <img src={brand.logo} alt="" aria-hidden="true" />
+            {brand.name}
           </span>
         ))}
       </div>

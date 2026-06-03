@@ -627,7 +627,15 @@ h3 {
 }
 
 .partner-label {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  height: 100%;
+  align-items: center;
   padding-left: 44px;
+  padding-right: 26px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0.78));
+  box-shadow: 20px 0 26px rgba(255, 255, 255, 0.92);
   color: var(--mint);
   font-size: 12px;
   font-weight: 1000;
@@ -639,18 +647,26 @@ h3 {
 .partner-track {
   display: flex;
   min-width: max-content;
-  gap: 34px;
+  gap: 38px;
   animation: rr-marquee 36s linear infinite;
 }
 
 .partner-track span {
   display: inline-flex;
   align-items: center;
-  gap: 9px;
+  gap: 11px;
   color: color-mix(in srgb, var(--navy), transparent 18%);
   font-size: 15px;
   font-weight: 950;
   white-space: nowrap;
+}
+
+.partner-track img {
+  display: block;
+  width: auto;
+  max-width: 92px;
+  height: 24px;
+  object-fit: contain;
 }
 
 @keyframes rr-marquee {
@@ -675,6 +691,24 @@ h3 {
   grid-template-columns: minmax(0, 0.88fr) minmax(360px, 1fr);
   align-items: center;
   gap: clamp(32px, 6vw, 84px);
+}
+
+.legacy-preview-frame {
+  justify-self: end;
+  width: min(100%, 548px);
+}
+
+.legacy-preview-frame .rr-app-preview {
+  width: 100%;
+  overflow: visible;
+}
+
+.legacy-preview-frame .rr-app-preview .rr-chip {
+  min-width: max-content;
+}
+
+.legacy-preview-frame .rr-app-preview .grid.grid-cols-3.gap-2 {
+  align-items: stretch;
 }
 
 .legacy-splash h2,
@@ -823,6 +857,10 @@ h3 {
     grid-template-columns: 1fr;
   }
 
+  .legacy-preview-frame {
+    justify-self: center;
+  }
+
   .strategy-copy {
     order: 1;
   }
@@ -886,6 +924,39 @@ h3 {
   .strategy-art img {
     width: min(440px, 112%);
     transform: translateX(-4%);
+  }
+
+  .legacy-preview-frame .rr-app-preview {
+    border-radius: 24px;
+    padding: 12px;
+  }
+
+  .legacy-preview-frame .rr-app-preview > .mb-3 {
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .legacy-preview-frame .rr-app-preview .rr-chip {
+    padding: 5px 8px;
+    font-size: 10px;
+  }
+
+  .legacy-preview-frame .rr-app-preview .grid.grid-cols-3.gap-2 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 7px;
+  }
+
+  .legacy-preview-frame .rr-app-preview .grid.grid-cols-3.gap-2 > div {
+    padding: 8px;
+  }
+
+  .legacy-preview-frame .rr-app-preview .grid.grid-cols-3.gap-2 > div div:first-child {
+    font-size: 9px;
+  }
+
+  .legacy-preview-frame .rr-app-preview .grid.grid-cols-3.gap-2 > div div:last-child {
+    font-size: 8px;
+    line-height: 1.35;
   }
 
   .open-steps {

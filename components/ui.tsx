@@ -309,7 +309,7 @@ export function SearchBar({ placeholder = "Search cards, sets, collectors" }: { 
 export function AppPreview() {
   const preview = cards.slice(0, 6);
   return (
-    <div className="rr-panel rr-preview-panel relative rounded-[34px] p-4">
+    <div className="rr-panel rr-preview-panel rr-app-preview relative rounded-[34px] p-4">
       <SparkleIcon size={26} className="rr-twinkle absolute -left-3 bottom-16 z-10" color="#ffc93c" />
       <div className="mb-3 flex items-center justify-between">
         <div className="flex items-center gap-2 text-sm font-black text-[var(--navy)]">

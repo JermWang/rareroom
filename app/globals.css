@@ -189,6 +189,26 @@ h3 {
   color: var(--ink);
 }
 
+.rr-preview-panel {
+  isolation: isolate;
+}
+
+.rr-preview-panel::before {
+  content: "";
+  position: absolute;
+  inset: 8px -9px -9px 9px;
+  z-index: -1;
+  border: 2px solid var(--navy);
+  border-radius: 34px;
+  background: color-mix(in srgb, var(--sky-soft), white 28%);
+  box-shadow: var(--shadow-card);
+  transform: rotate(-1.2deg);
+}
+
+.rr-card-art-img {
+  image-rendering: auto;
+}
+
 .rr-btn {
   position: relative;
   display: inline-flex;

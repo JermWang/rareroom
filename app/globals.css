@@ -486,7 +486,7 @@ h3 {
 .strategy-ticker-track {
   display: flex;
   min-width: max-content;
-  animation: rr-marquee 28s linear infinite;
+  animation: rr-marquee 60s linear infinite;
 }
 
 .strategy-ticker span {

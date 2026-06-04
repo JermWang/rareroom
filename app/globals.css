@@ -205,6 +205,21 @@ h3 {
   transform: rotate(-1.2deg);
 }
 
+.rr-app-preview.glass {
+  overflow: hidden;
+  border-color: rgba(255, 255, 255, 0.72);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.82), rgba(245, 251, 255, 0.58));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.82),
+    0 28px 70px -34px rgba(23, 58, 99, 0.56),
+    0 10px 24px -20px rgba(23, 58, 99, 0.42);
+}
+
+.rr-app-preview.glass .rr-chip {
+  background: var(--mint);
+  color: #fff !important;
+}
+
 .rr-card-art-img {
   image-rendering: auto;
 }
@@ -388,12 +403,44 @@ h3 {
 }
 
 .landing-page {
+  position: relative;
+  isolation: isolate;
   min-height: 100vh;
-  background:
-    radial-gradient(720px 480px at 18% 18%, rgba(54, 171, 232, 0.16), transparent 62%),
-    radial-gradient(660px 420px at 92% 12%, rgba(255, 201, 60, 0.2), transparent 58%),
-    linear-gradient(180deg, #f9fdff 0%, #eef7fe 44%, #f8fcff 100%);
+  overflow: hidden;
+  background: #9bdcff;
   color: var(--navy);
+}
+
+.landing-page::before {
+  content: "";
+  position: fixed;
+  inset: -18px;
+  z-index: -2;
+  background-image: url("/images/pokemon-johto-thumbnail-cianwood-city.webp");
+  background-position: center top;
+  background-size: cover;
+  filter: blur(5px);
+  transform: scale(1.035);
+  opacity: 0.34;
+  pointer-events: none;
+}
+
+.landing-page::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(720px 480px at 18% 18%, rgba(255, 255, 255, 0.28), transparent 62%),
+    radial-gradient(660px 420px at 92% 12%, rgba(255, 255, 255, 0.18), transparent 58%),
+    linear-gradient(180deg, rgba(126, 207, 255, 0.8) 0%, rgba(155, 220, 255, 0.78) 44%, rgba(178, 229, 255, 0.84) 100%);
+  pointer-events: none;
+}
+
+.landing-page > main,
+.landing-page > footer {
+  position: relative;
+  z-index: 1;
 }
 
 .landing-wrap {
@@ -410,10 +457,10 @@ h3 {
   grid-template-columns: 210px 1fr 120px;
   align-items: center;
   gap: 24px;
-  border-bottom: 1px solid rgba(23, 58, 99, 0.14);
-  background: rgba(249, 253, 255, 0.9);
+  border-bottom: 0;
+  background: linear-gradient(180deg, rgba(249, 253, 255, 0.84), rgba(249, 253, 255, 0));
   padding: 0 44px;
-  backdrop-filter: blur(18px);
+  backdrop-filter: none;
 }
 
 .landing-brand img {
@@ -424,8 +471,16 @@ h3 {
 
 .landing-nav nav {
   display: flex;
+  width: max-content;
   justify-content: center;
-  gap: clamp(18px, 3vw, 42px);
+  justify-self: center;
+  gap: clamp(12px, 2vw, 26px);
+  border: 1px solid rgba(255, 255, 255, 0.46);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.34);
+  padding: 7px 10px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.58), 0 14px 38px -28px rgba(23, 58, 99, 0.65);
+  backdrop-filter: blur(18px);
 }
 
 .landing-nav nav a,
@@ -445,11 +500,12 @@ h3 {
 
 .landing-nav-cta {
   justify-self: end;
-  border: 1.5px solid var(--navy);
+  border: 1.5px solid rgba(23, 58, 99, 0.72);
   border-radius: 999px;
   padding: 10px 20px;
-  background: #fff;
+  background: rgba(255, 255, 255, 0.44);
   color: var(--navy);
+  backdrop-filter: blur(18px);
 }
 
 .strategy-hero {
@@ -522,10 +578,10 @@ h3 {
   z-index: 1;
   display: grid;
   min-height: calc(100vh - 188px);
-  grid-template-columns: minmax(360px, 0.88fr) minmax(480px, 1.12fr);
+  grid-template-columns: minmax(300px, 0.78fr) minmax(520px, 1.22fr);
   align-items: center;
-  gap: clamp(28px, 5vw, 84px);
-  width: min(1280px, calc(100% - 72px));
+  gap: clamp(24px, 4vw, 70px);
+  width: min(1320px, calc(100% - 72px));
   margin: 0 auto;
   padding: clamp(42px, 7vh, 92px) 0 34px;
 }
@@ -547,13 +603,15 @@ h3 {
 
 .strategy-art img {
   display: block;
-  width: min(540px, 100%);
+  width: min(520px, 100%);
   margin: 0 auto;
   filter: drop-shadow(0 34px 34px rgba(23, 58, 99, 0.2));
 }
 
 .strategy-copy {
   max-width: 760px;
+  justify-self: center;
+  text-align: left;
 }
 
 .strategy-status {
@@ -580,7 +638,7 @@ h3 {
 .strategy-copy h1 {
   margin: 0;
   color: var(--navy);
-  font-size: clamp(70px, 9.6vw, 136px);
+  font-size: clamp(86px, 11.2vw, 168px);
   font-weight: 900;
   letter-spacing: 0;
   line-height: 0.82;
@@ -594,9 +652,9 @@ h3 {
 }
 
 .strategy-copy h2 {
-  margin: 26px 0 0;
+  margin: 30px 0 0;
   color: var(--navy);
-  font-size: clamp(25px, 3vw, 42px);
+  font-size: clamp(28px, 3.4vw, 48px);
   font-weight: 900;
   letter-spacing: 0;
   line-height: 1;
@@ -615,7 +673,7 @@ h3 {
   display: flex;
   flex-wrap: wrap;
   gap: 14px;
-  margin-top: 32px;
+  margin-top: 34px;
 }
 
 .landing-btn {
@@ -650,14 +708,15 @@ h3 {
 }
 
 .strategy-flow {
-  display: inline-flex;
-  flex-wrap: wrap;
+  display: flex;
+  max-width: 620px;
   align-items: center;
-  gap: 14px;
-  margin-top: 30px;
-  border-top: 1px solid rgba(23, 58, 99, 0.14);
-  border-bottom: 1px solid rgba(23, 58, 99, 0.14);
-  padding: 14px 0;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 34px;
+  border-top: 1px solid rgba(23, 58, 99, 0.16);
+  border-bottom: 1px solid rgba(23, 58, 99, 0.16);
+  padding: 15px 0;
   color: color-mix(in srgb, var(--navy), transparent 18%);
   font-size: 12px;
   font-weight: 1000;
@@ -667,6 +726,20 @@ h3 {
 
 .strategy-flow svg {
   color: var(--sky);
+}
+
+.strategy-mantra {
+  position: absolute;
+  right: clamp(22px, 3vw, 46px);
+  bottom: 92px;
+  z-index: 3;
+  color: rgba(23, 58, 99, 0.62);
+  font-family: var(--font-display);
+  font-size: clamp(22px, 2.4vw, 34px);
+  font-weight: 900;
+  letter-spacing: 0;
+  line-height: 1;
+  pointer-events: none;
 }
 
 .partner-marquee {
@@ -740,7 +813,7 @@ h3 {
 .trust-section,
 .landing-final {
   position: relative;
-  padding: clamp(76px, 10vw, 130px) 0;
+  padding: clamp(92px, 11vw, 154px) 0;
 }
 
 .legacy-splash-grid {
@@ -751,13 +824,13 @@ h3 {
 }
 
 .legacy-preview-frame {
-  justify-self: end;
+  justify-self: center;
   width: min(100%, 548px);
 }
 
 .legacy-preview-frame .rr-app-preview {
   width: 100%;
-  overflow: visible;
+  overflow: hidden;
 }
 
 .legacy-preview-frame .rr-app-preview .rr-chip {
@@ -817,32 +890,110 @@ h3 {
   max-width: 760px;
 }
 
-.open-steps {
+.trade-cycle {
+  margin-top: 54px;
+}
+
+.trade-cycle-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(20px, 4vw, 54px);
+  position: relative;
+  z-index: 2;
+  border-top: 1px solid rgba(23, 58, 99, 0.18);
+  border-bottom: 1px solid rgba(23, 58, 99, 0.18);
+  padding: 18px 0;
+}
+
+.trade-cycle-step {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 34px;
-  margin-top: 62px;
-  border-top: 1px solid rgba(23, 58, 99, 0.16);
+  flex: 1 1 190px;
+  min-height: 118px;
+  align-content: start;
+  gap: 9px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 2px 0;
+  color: var(--navy);
+  text-align: left;
+  box-shadow: none;
+  backdrop-filter: none;
+  cursor: pointer;
+  opacity: 0.58;
+  transition: transform 0.18s ease, opacity 0.18s ease;
 }
 
-.open-step {
-  padding-top: 24px;
+.trade-cycle-step:hover,
+.trade-cycle-step-active {
+  opacity: 1;
+  box-shadow: none;
+  transform: translateY(-3px);
 }
 
-.open-step span {
-  color: var(--sky);
-  font-size: 13px;
+.trade-cycle-step span {
+  display: inline-flex;
+  width: max-content;
+  border: 1.5px solid rgba(23, 58, 99, 0.78);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.36);
+  padding: 2px 10px;
+  color: var(--sky-deep);
+  font-size: 12px;
   font-weight: 1000;
-  letter-spacing: 0.14em;
+  line-height: 1.2;
 }
 
-.open-step svg {
+.trade-cycle-step strong {
+  color: var(--navy);
+  font-family: var(--font-display);
+  font-size: 25px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.trade-cycle-step em {
+  color: var(--muted);
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 850;
+  line-height: 1.45;
+}
+
+.trade-cycle-stage {
+  position: relative;
+  height: clamp(360px, 44vw, 560px);
+  margin-top: 8px;
+  overflow: hidden;
+  touch-action: none;
+  cursor: grab;
+}
+
+.trade-cycle-stage:active {
+  cursor: grabbing;
+}
+
+.trade-cycle-stage::before {
+  content: "";
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  bottom: 9%;
+  height: 22%;
+  border-radius: 999px;
+  background: radial-gradient(ellipse, rgba(23, 58, 99, 0.24), transparent 68%);
+  filter: blur(18px);
+  pointer-events: none;
+}
+
+.trade-cycle-stage canvas {
+  position: relative;
+  z-index: 1;
   display: block;
-  margin-top: 28px;
-  color: var(--sun-deep);
+  width: 100%;
+  height: 100%;
 }
 
-.open-step h3,
 .trust-line h3 {
   margin: 18px 0 0;
   color: var(--navy);
@@ -851,7 +1002,6 @@ h3 {
   letter-spacing: 0;
 }
 
-.open-step p,
 .trust-line p {
   margin: 10px 0 0;
   color: var(--muted);
@@ -874,15 +1024,18 @@ h3 {
 
 .trust-line {
   display: grid;
-  grid-template-columns: 34px 1fr;
-  gap: 18px;
+  grid-template-columns: 54px 1fr;
+  gap: 24px;
   border-top: 1px solid rgba(23, 58, 99, 0.16);
   padding-top: 24px;
 }
 
-.trust-line svg {
-  margin-top: 4px;
-  color: var(--mint);
+.trust-line span {
+  color: var(--sky);
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 900;
+  line-height: 1;
 }
 
 .landing-final {
@@ -926,7 +1079,8 @@ h3 {
     order: 2;
   }
 
-  .open-steps {
+  .trade-cycle-steps {
+    display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -988,7 +1142,7 @@ h3 {
     padding: 12px;
   }
 
-  .legacy-preview-frame .rr-app-preview > .mb-3 {
+  .legacy-preview-frame .rr-app-preview-header {
     align-items: flex-start;
     gap: 10px;
   }
@@ -1016,8 +1170,34 @@ h3 {
     line-height: 1.35;
   }
 
-  .open-steps {
-    grid-template-columns: 1fr;
+  .trade-cycle {
+    margin-top: 38px;
+  }
+
+  .trade-cycle-steps {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 26px 18px;
+  }
+
+  .trade-cycle-step {
+    min-height: auto;
+    border-radius: 16px;
+    padding: 0;
+  }
+
+  .trade-cycle-step strong {
+    font-size: 19px;
+  }
+
+  .trade-cycle-step em {
+    font-size: 12px;
+    line-height: 1.35;
+  }
+
+  .trade-cycle-stage {
+    height: 330px;
+    margin-top: 0;
   }
 
   .legacy-stats {

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CSSProperties, ReactNode } from "react";
+import { CSSProperties, ReactNode, useEffect, useRef, useState } from "react";
 import {
   BadgeCheck,
   Bell,
@@ -18,6 +18,19 @@ import {
   Zap
 } from "lucide-react";
 import { cards, CollectorCard, collectors, isVerified, statusCopy, statusIcons, typePalette, verificationCopy } from "@/lib/data";
+
+type TradeCycleStep = {
+  title: string;
+  copy: string;
+  imageUrl: string;
+};
+
+const tradeCycleSteps: TradeCycleStep[] = [
+  { title: "Import", copy: "Bring your cards into a clean binder first.", imageUrl: "/images/cards/charizard-base1-4.png" },
+  { title: "Verify", copy: "Attach ownership proof to the cards that matter.", imageUrl: "/images/cards/blastoise-base1-2.png" },
+  { title: "Swap", copy: "Spin through matches and build balanced offers.", imageUrl: "/images/cards/rayquaza-swsh7-218.png" },
+  { title: "Record", copy: "Keep proof status, receipts, and trade history visible.", imageUrl: "/images/cards/umbreon-swsh7-215.png" }
+];
 
 export function cx(...parts: Array<string | false | null | undefined>) {
   return parts.filter(Boolean).join(" ");
@@ -315,14 +328,13 @@ export function SearchBar({ placeholder = "Search cards, sets, collectors" }: { 
 export function AppPreview() {
   const preview = cards.slice(0, 6);
   return (
-    <div className="rr-panel rr-preview-panel rr-app-preview relative rounded-[34px] p-4">
-      <SparkleIcon size={26} className="rr-twinkle absolute -left-3 bottom-16 z-10" color="#ffc93c" />
-      <div className="mb-3 flex items-center justify-between">
-        <div className="flex items-center gap-2 text-sm font-black text-[var(--navy)]">
-          <span className="grid size-8 place-items-center rounded-full border-2 border-[var(--navy)] bg-[var(--sky-soft)] text-xs font-black">MM</span>
-          MiraMint&apos;s Binder
+    <div className="glass rr-app-preview relative rounded-[28px] p-4 md:p-5">
+      <div className="rr-app-preview-header mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2.5 text-sm font-black text-[var(--navy)]">
+          <span className="grid size-9 shrink-0 place-items-center rounded-full border-2 border-[var(--navy)] bg-[var(--sky-soft)] text-xs font-black shadow-card">MM</span>
+          <span className="truncate">MiraMint&apos;s Binder</span>
         </div>
-        <span className="rr-chip bg-[var(--mint)] text-white">
+        <span className="rr-chip shrink-0 bg-[var(--mint)] text-white">
           <BadgeCheck size={13} />
           12 verified
         </span>
@@ -337,6 +349,219 @@ export function AppPreview() {
         <MiniProof tone="sun" title="Wishlist match" copy="2 cards found" />
         <MiniProof tone="sky" title="Fair swap" copy="Values balanced" />
       </div>
+    </div>
+  );
+}
+
+export function TradeCycle3D() {
+  const mountRef = useRef<HTMLDivElement | null>(null);
+  const targetRotationRef = useRef(0);
+  const dragStartRef = useRef<{ x: number; rotation: number } | null>(null);
+  const interactionRef = useRef(0);
+  const [activeStep, setActiveStep] = useState(0);
+
+  useEffect(() => {
+    const mount = mountRef.current;
+    if (!mount) return;
+
+    let cancelled = false;
+    let cleanup = () => {};
+
+    async function initScene() {
+      const THREE = await import("three");
+      if (cancelled || !mount) return;
+
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
+      camera.position.set(0, 0.38, 6.4);
+
+      const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, preserveDrawingBuffer: true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      mount.appendChild(renderer.domElement);
+
+      const group = new THREE.Group();
+      group.position.y = 0.46;
+      scene.add(group);
+
+      const ambient = new THREE.AmbientLight(0xffffff, 1.5);
+      scene.add(ambient);
+      const keyLight = new THREE.DirectionalLight(0xffffff, 2.15);
+      keyLight.position.set(3, 4, 6);
+      scene.add(keyLight);
+      const rimLight = new THREE.DirectionalLight(0x74d4f4, 1.4);
+      rimLight.position.set(-4, 2, -3);
+      scene.add(rimLight);
+
+      const loader = new THREE.TextureLoader();
+      loader.crossOrigin = "anonymous";
+      const radius = 3.05;
+      const cardWidth = 1.35;
+      const cardHeight = 1.88;
+      const segment = (Math.PI * 2) / tradeCycleSteps.length;
+      const cardMeshes: Array<import("three").Mesh> = [];
+
+      tradeCycleSteps.forEach((step, index) => {
+        const texture = loader.load(step.imageUrl);
+        texture.colorSpace = THREE.SRGBColorSpace;
+        texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+
+        const material = new THREE.MeshPhysicalMaterial({
+          map: texture,
+          roughness: 0.35,
+          metalness: 0.02,
+          clearcoat: 0.85,
+          clearcoatRoughness: 0.18,
+          side: THREE.DoubleSide
+        });
+
+        const mesh = new THREE.Mesh(new THREE.PlaneGeometry(cardWidth, cardHeight, 18, 18), material);
+        const angle = index * segment;
+        mesh.position.set(Math.sin(angle) * radius, 0, Math.cos(angle) * radius);
+        mesh.rotation.y = angle;
+        mesh.userData.baseY = index % 2 === 0 ? 0.04 : -0.04;
+        group.add(mesh);
+        cardMeshes.push(mesh);
+
+        const shadow = new THREE.Mesh(
+          new THREE.PlaneGeometry(cardWidth * 1.05, cardHeight * 1.05),
+          new THREE.MeshBasicMaterial({ color: 0x173a63, transparent: true, opacity: 0.16, side: THREE.DoubleSide })
+        );
+        shadow.position.set(mesh.position.x, mesh.position.y - 0.05, mesh.position.z - 0.04);
+        shadow.rotation.y = angle;
+        group.add(shadow);
+      });
+
+      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      interactionRef.current = performance.now();
+
+      function resize() {
+        if (!mount) return;
+        const width = mount.clientWidth;
+        const height = mount.clientHeight;
+        const sceneScale = width < 520 ? 0.68 : width < 900 ? 0.82 : 1;
+        group.scale.setScalar(sceneScale);
+        group.position.y = width < 520 ? 0.54 : 0.46;
+        camera.aspect = width / Math.max(height, 1);
+        camera.updateProjectionMatrix();
+        renderer.setSize(width, height, false);
+      }
+
+      function updateActive(rotation: number) {
+        const raw = Math.round(-rotation / segment);
+        const next = ((raw % tradeCycleSteps.length) + tradeCycleSteps.length) % tradeCycleSteps.length;
+        setActiveStep((current) => (current === next ? current : next));
+      }
+
+      let animationFrame = 0;
+      const animate = () => {
+        const now = performance.now();
+        if (!prefersReducedMotion && now - interactionRef.current > 2600) {
+          targetRotationRef.current -= 0.0035;
+        }
+
+        group.rotation.y += (targetRotationRef.current - group.rotation.y) * 0.08;
+        cardMeshes.forEach((mesh, index) => {
+          mesh.position.y = mesh.userData.baseY + Math.sin(now * 0.0016 + index * 0.75) * 0.045;
+        });
+        updateActive(group.rotation.y);
+        renderer.render(scene, camera);
+        animationFrame = requestAnimationFrame(animate);
+      };
+
+      const onWheel = (event: WheelEvent) => {
+        event.preventDefault();
+        interactionRef.current = performance.now();
+        targetRotationRef.current -= event.deltaY * 0.004;
+      };
+
+      const onPointerDown = (event: PointerEvent) => {
+        interactionRef.current = performance.now();
+        dragStartRef.current = { x: event.clientX, rotation: targetRotationRef.current };
+        mount.setPointerCapture(event.pointerId);
+      };
+
+      const onPointerMove = (event: PointerEvent) => {
+        const start = dragStartRef.current;
+        if (!start) return;
+        interactionRef.current = performance.now();
+        targetRotationRef.current = start.rotation + (event.clientX - start.x) * 0.012;
+      };
+
+      const onPointerUp = (event: PointerEvent) => {
+        dragStartRef.current = null;
+        if (mount.hasPointerCapture(event.pointerId)) {
+          mount.releasePointerCapture(event.pointerId);
+        }
+        const snapped = Math.round(targetRotationRef.current / segment) * segment;
+        targetRotationRef.current = snapped;
+      };
+
+      const resizeObserver = new ResizeObserver(resize);
+      resizeObserver.observe(mount);
+      mount.addEventListener("wheel", onWheel, { passive: false });
+      mount.addEventListener("pointerdown", onPointerDown);
+      mount.addEventListener("pointermove", onPointerMove);
+      mount.addEventListener("pointerup", onPointerUp);
+      mount.addEventListener("pointercancel", onPointerUp);
+      resize();
+      animate();
+
+      cleanup = () => {
+        cancelAnimationFrame(animationFrame);
+        resizeObserver.disconnect();
+        mount.removeEventListener("wheel", onWheel);
+        mount.removeEventListener("pointerdown", onPointerDown);
+        mount.removeEventListener("pointermove", onPointerMove);
+        mount.removeEventListener("pointerup", onPointerUp);
+        mount.removeEventListener("pointercancel", onPointerUp);
+        renderer.dispose();
+        group.traverse((object) => {
+          const mesh = object as import("three").Mesh;
+          if (mesh.geometry) mesh.geometry.dispose();
+          const material = mesh.material;
+          if (Array.isArray(material)) {
+            material.forEach((item) => item.dispose());
+          } else if (material) {
+            material.dispose();
+          }
+        });
+        renderer.domElement.remove();
+      };
+    }
+
+    initScene();
+
+    return () => {
+      cancelled = true;
+      cleanup();
+    };
+  }, []);
+
+  function rotateToStep(index: number) {
+    const segment = (Math.PI * 2) / tradeCycleSteps.length;
+    interactionRef.current = performance.now();
+    targetRotationRef.current = -index * segment;
+    setActiveStep(index);
+  }
+
+  return (
+    <div className="trade-cycle">
+      <div className="trade-cycle-steps" aria-label="RareRoom trade workflow cycle">
+        {tradeCycleSteps.map((step, index) => (
+          <button
+            key={step.title}
+            type="button"
+            className={cx("trade-cycle-step", activeStep === index && "trade-cycle-step-active")}
+            onClick={() => rotateToStep(index)}
+          >
+            <span>{String(index + 1).padStart(2, "0")}</span>
+            <strong>{step.title}</strong>
+            <em>{step.copy}</em>
+          </button>
+        ))}
+      </div>
+      <div className="trade-cycle-stage" ref={mountRef} role="img" aria-label="A rotating 3D wheel of Pokemon cards representing the trade workflow" />
     </div>
   );
 }

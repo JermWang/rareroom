@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { ArrowRight, BadgeCheck, BookOpen, CheckCircle2, Gem, Search, ShieldCheck, Sparkles, UploadCloud } from "lucide-react";
-import { AppPreview, Footer } from "@/components/ui";
+import { ArrowRight, Search } from "lucide-react";
+import { AppPreview, Footer, TradeCycle3D } from "@/components/ui";
 
 // Live market ticker — strictly high-value card price movement (up/down only).
 const tickerItems: { name: string; value: string; delta: string; dir: "up" | "down" }[] = [
@@ -23,17 +23,10 @@ const partnerBrands = [
   { name: "WalletConnect", logo: "/images/brands/walletconnect.svg" }
 ];
 
-const steps = [
-  { title: "Import", copy: "Bring in cards from lists, CSV exports, live search, or manual adds.", icon: UploadCloud },
-  { title: "Verify", copy: "Attach ownership proof only when a card or trade needs more trust.", icon: BadgeCheck },
-  { title: "Swap", copy: "Build clean offers around wishlist matches, availability, and reputation.", icon: Sparkles },
-  { title: "Record", copy: "Keep trade history, disputes, proof status, and optional wallet receipts visible.", icon: CheckCircle2 }
-];
-
 const trustLines = [
-  { title: "Email-first accounts", copy: "Collectors can browse, import, and build a binder without a wallet.", icon: ShieldCheck },
-  { title: "Optional Web3 proof", copy: "Wallet signatures and onchain receipts stay available for higher-value swaps.", icon: Gem },
-  { title: "Public trade context", copy: "For-trade cards, wishlists, proof status, and reputation sit in one profile.", icon: BookOpen }
+  { title: "Email-first accounts", copy: "Collectors can browse, import, and build a binder without a wallet." },
+  { title: "Optional Web3 proof", copy: "Wallet signatures and onchain receipts stay available for higher-value swaps." },
+  { title: "Public trade context", copy: "For-trade cards, wishlists, proof status, and reputation sit in one profile." }
 ];
 
 export default function LandingPage() {
@@ -77,6 +70,9 @@ export default function LandingPage() {
               </div>
             </div>
           </div>
+          <div className="strategy-mantra" aria-hidden="true">
+            Import.Prove.Swap.
+          </div>
           <PartnerMarquee />
         </section>
 
@@ -114,19 +110,7 @@ export default function LandingPage() {
         <section className="open-section">
           <div className="landing-wrap">
             <SectionIntro title="A calmer trade workflow" copy="RareRoom keeps the fun of a trade floor, but trims the uncertainty before cards change hands." />
-            <div className="open-steps">
-              {steps.map((step, index) => {
-                const Icon = step.icon;
-                return (
-                  <div key={step.title} className="open-step">
-                    <span>{String(index + 1).padStart(2, "0")}</span>
-                    <Icon size={24} />
-                    <h3>{step.title}</h3>
-                    <p>{step.copy}</p>
-                  </div>
-                );
-              })}
-            </div>
+            <TradeCycle3D />
           </div>
         </section>
 
@@ -134,18 +118,15 @@ export default function LandingPage() {
           <div className="landing-wrap trust-grid">
             <SectionIntro title="Trust signals without the clutter" copy="Profiles stay readable. Proof, availability, and history are visible where collectors actually make decisions." />
             <div className="trust-lines">
-              {trustLines.map((line) => {
-                const Icon = line.icon;
-                return (
-                  <div key={line.title} className="trust-line">
-                    <Icon size={22} />
-                    <div>
-                      <h3>{line.title}</h3>
-                      <p>{line.copy}</p>
-                    </div>
+              {trustLines.map((line, index) => (
+                <div key={line.title} className="trust-line">
+                  <span>{String(index + 1).padStart(2, "0")}</span>
+                  <div>
+                    <h3>{line.title}</h3>
+                    <p>{line.copy}</p>
                   </div>
-                );
-              })}
+                </div>
+              ))}
             </div>
           </div>
         </section>

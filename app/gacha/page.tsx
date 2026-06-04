@@ -143,10 +143,10 @@ export default function GachaPage() {
           }
         />
 
-        <div className="mb-5 flex items-start gap-3 rounded-xl border border-line bg-white/[0.045] p-4 text-sm leading-6 text-white/56">
+        <div className="mb-5 flex items-start gap-3 rounded-xl border border-line bg-white/[0.045] p-4 text-sm leading-6 text-[var(--muted)]">
           <Info size={18} className="mt-0.5 shrink-0 text-sky" />
           <p>
-            <span className="font-black text-white/80">Collector pack simulation.</span> These are simulated binder draft packs, not official Pokémon
+            <span className="font-black text-[var(--navy)]">Collector pack simulation.</span> These are simulated binder draft packs, not official Pokémon
             products. Pulls add fan-made collector cards to your binder for trading practice.
           </p>
         </div>

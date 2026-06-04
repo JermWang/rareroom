@@ -2,26 +2,25 @@ import Link from "next/link";
 import { ArrowRight, BadgeCheck, BookOpen, CheckCircle2, Gem, Search, ShieldCheck, Sparkles, UploadCloud } from "lucide-react";
 import { AppPreview, Footer } from "@/components/ui";
 
-const tickerItems = [
-  { name: "Charizard", value: "$420", delta: "+12%" },
-  { name: "Umbreon", value: "$560", delta: "+8%" },
-  { name: "Verified", value: "118", delta: "+24" },
-  { name: "Trades", value: "47", delta: "+6" },
-  { name: "Wishlist", value: "2", delta: "live" },
-  { name: "Proof", value: "on", delta: "active" }
+// Live market ticker — strictly high-value card price movement (up/down only).
+const tickerItems: { name: string; value: string; delta: string; dir: "up" | "down" }[] = [
+  { name: "Umbreon VMAX (Moonbreon)", value: "$560", delta: "8.4%", dir: "up" },
+  { name: "Charizard · Base Set", value: "$420", delta: "3.1%", dir: "down" },
+  { name: "Rayquaza VMAX Alt", value: "$215", delta: "5.7%", dir: "up" },
+  { name: "Blastoise · Base Set", value: "$165", delta: "2.2%", dir: "down" },
+  { name: "Charizard VMAX · Shining Fates", value: "$150", delta: "6.0%", dir: "up" },
+  { name: "Venusaur · Base Set", value: "$128", delta: "1.4%", dir: "up" },
+  { name: "Mewtwo · Base Set", value: "$98", delta: "2.6%", dir: "down" },
+  { name: "Gengar VMAX Alt", value: "$64", delta: "4.8%", dir: "up" }
 ];
 
+// Only collector-relevant integrations: card data sources + optional wallet proof.
 const partnerBrands = [
+  { name: "Pokémon TCG API", logo: "/images/brands/pokemon-tcg-api.png" },
   { name: "TCGdex", logo: "/images/brands/tcgdex.svg" },
-  { name: "Pokemon TCG API", logo: "/images/brands/pokemon-tcg-api.png" },
-  { name: "Supabase", logo: "/images/brands/supabase.svg" },
-  { name: "Vercel", logo: "/images/brands/vercel.svg" },
   { name: "Phantom", logo: "/images/brands/phantom.svg" },
-  { name: "WalletConnect", logo: "/images/brands/walletconnect.svg" },
   { name: "Solana", logo: "/images/brands/solana.svg" },
-  { name: "Stripe", logo: "/images/brands/stripe.svg" },
-  { name: "Playwright", logo: "/images/brands/playwright.svg" },
-  { name: "Next.js", logo: "/images/brands/nextdotjs.svg" }
+  { name: "WalletConnect", logo: "/images/brands/walletconnect.svg" }
 ];
 
 const steps = [
@@ -169,10 +168,10 @@ export default function LandingPage() {
 
 function LandingNav() {
   const nav = [
+    { href: "/swap", label: "Swap" },
     { href: "/binder", label: "Binder" },
     { href: "/import", label: "Import" },
     { href: "/marketplace", label: "Marketplace" },
-    { href: "/swap", label: "Swap" },
     { href: "/verification", label: "Verify" }
   ];
 
@@ -183,7 +182,7 @@ function LandingNav() {
       </Link>
       <nav aria-label="Primary navigation">
         {nav.map((item) => (
-          <Link key={item.href} href={item.href}>
+          <Link key={item.href} href={item.href} className={item.href === "/swap" ? "nav-swap" : undefined}>
             {item.label}
           </Link>
         ))}
@@ -198,13 +197,15 @@ function LandingNav() {
 function LiveTicker() {
   const row = [...tickerItems, ...tickerItems, ...tickerItems];
   return (
-    <div className="strategy-ticker" aria-label="RareRoom live market ticker">
+    <div className="strategy-ticker" aria-label="RareRoom high-value card price ticker">
       <div className="strategy-ticker-track">
         {row.map((item, index) => (
           <span key={`${item.name}-${index}`}>
             <b>{item.name}</b>
             <strong>{item.value}</strong>
-            <em>{item.delta}</em>
+            <em style={{ color: item.dir === "up" ? "var(--mint)" : "var(--red)" }}>
+              {item.dir === "up" ? "▲" : "▼"} {item.delta}
+            </em>
           </span>
         ))}
       </div>
@@ -216,7 +217,6 @@ function PartnerMarquee() {
   const row = [...partnerBrands, ...partnerBrands];
   return (
     <div className="partner-marquee">
-      <span className="partner-label">Built with the collector stack</span>
       <div className="partner-track">
         {row.map((brand, index) => (
           <span key={`${brand.name}-${index}`}>

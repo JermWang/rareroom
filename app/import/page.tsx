@@ -228,11 +228,11 @@ export default function ImportPage() {
           }
         />
 
-        <div className="mb-5 flex items-start gap-3 rounded-xl border border-line bg-white/[0.045] p-4 text-sm leading-6 text-white/56">
+        <div className="mb-5 flex items-start gap-3 rounded-xl border border-line bg-white/[0.045] p-4 text-sm leading-6 text-[var(--muted)]">
           <Info size={18} className="mt-0.5 shrink-0 text-sky" />
           <p>
             No Pokémon platform offers a free &quot;sign in and sync&quot; API, so RareRoom imports from{" "}
-            <span className="font-black text-white/80">exports and scans</span>. Paste a deck/collection list, upload a CSV export, or
+            <span className="font-black text-[var(--navy)]">exports and scans</span>. Paste a deck/collection list, upload a CSV export, or
             search the live catalog. Card data from{" "}
             <a href="https://tcgdex.dev" target="_blank" rel="noreferrer" className="font-black text-volt underline">
               TCGdex

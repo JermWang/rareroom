@@ -94,10 +94,10 @@ export function Button({
 export function Header() {
   const path = usePathname();
   const nav = [
+    { href: "/swap", label: "Swap" },
     { href: "/binder", label: "Binder" },
     { href: "/import", label: "Import" },
     { href: "/marketplace", label: "Marketplace" },
-    { href: "/swap", label: "Swap" },
     { href: "/gacha", label: "Packs" },
     { href: "/verification", label: "Verify" }
   ];
@@ -109,18 +109,24 @@ export function Header() {
           <img src="/images/rareroom-logo-cropped.png" alt="RareRoom" className="h-12 w-auto" />
         </Link>
         <nav className="hidden items-center gap-1 md:flex">
-          {nav.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cx(
-                "rounded-full px-3.5 py-2 text-[14.5px] font-black text-[var(--muted)] transition hover:bg-[rgba(23,58,99,0.06)] hover:text-[var(--navy)]",
-                path === item.href && "bg-[var(--sky-soft)] text-[var(--navy)]"
-              )}
-            >
-              {item.label}
-            </Link>
-          ))}
+          {nav.map((item) =>
+            item.href === "/swap" ? (
+              <Link key={item.href} href={item.href} className={cx("nav-swap", path === item.href && "nav-swap-active")}>
+                {item.label}
+              </Link>
+            ) : (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cx(
+                  "rounded-full px-3.5 py-2 text-[14.5px] font-black text-[var(--muted)] transition hover:bg-[rgba(23,58,99,0.06)] hover:text-[var(--navy)]",
+                  path === item.href && "bg-[var(--sky-soft)] text-[var(--navy)]"
+                )}
+              >
+                {item.label}
+              </Link>
+            )
+          )}
         </nav>
         <div className="flex items-center gap-2">
           <Button href="/auth" variant="primary" className="hidden min-h-10 px-4 text-sm sm:inline-flex">

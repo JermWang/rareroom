@@ -133,6 +133,7 @@ export default function LandingPage() {
 
         <section className="landing-final">
           <div className="landing-wrap landing-final-inner">
+            <div className="landing-final-badge">Free to join</div>
             <h2>Open your binder.</h2>
             <p>Add cards today. Bring proof when a trade needs it.</p>
             <Link href="/auth" className="landing-btn landing-btn-primary">
@@ -155,6 +156,7 @@ function LandingNav() {
     { href: "/marketplace", label: "Marketplace" },
     { href: "/verification", label: "Verify" }
   ];
+
 
   return (
     <header className="landing-nav">
@@ -195,13 +197,15 @@ function LiveTicker() {
 }
 
 function PartnerMarquee() {
-  const row = [...partnerBrands, ...partnerBrands];
+  // Triple so the seam never appears on wide screens; padding on each span (not gap)
+  // ensures translateX(-33.333%) lands exactly at the loop point with no jump.
+  const row = [...partnerBrands, ...partnerBrands, ...partnerBrands];
   return (
-    <div className="partner-marquee">
+    <div className="partner-marquee" aria-hidden="true">
       <div className="partner-track">
         {row.map((brand, index) => (
           <span key={`${brand.name}-${index}`}>
-            <img src={brand.logo} alt="" aria-hidden="true" />
+            <img src={brand.logo} alt="" />
             {brand.name}
           </span>
         ))}

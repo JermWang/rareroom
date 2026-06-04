@@ -8,6 +8,7 @@ import {
   Bell,
   CircleUserRound,
   LayoutDashboard,
+  LogOut,
   Search,
   SlidersHorizontal,
   Sparkles,
@@ -18,6 +19,7 @@ import {
   Zap
 } from "lucide-react";
 import { cards, CollectorCard, collectors, isVerified, statusCopy, statusIcons, typePalette, verificationCopy } from "@/lib/data";
+import { supabase } from "@/lib/supabase";
 
 type TradeCycleStep = {
   title: string;
@@ -140,17 +142,111 @@ export function Header() {
             )
           )}
         </nav>
-        <div className="flex items-center gap-2">
-          <Button href="/auth" variant="primary" className="hidden min-h-10 px-4 text-sm sm:inline-flex">
-            <PokeballIcon size={18} />
-            Start Your Binder
-          </Button>
-          <Link className="grid size-11 place-items-center rounded-full border-2 border-[var(--navy)] bg-white text-[var(--navy)] shadow-card" href="/profile">
-            <CircleUserRound size={19} />
-          </Link>
-        </div>
+        <HeaderAuth />
       </div>
     </header>
+  );
+}
+
+type SessionUser = { id: string; name: string; avatar?: string | null };
+
+function HeaderAuth() {
+  const [ready, setReady] = useState(false);
+  const [user, setUser] = useState<SessionUser | null>(null);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (!supabase) {
+      setReady(true);
+      return;
+    }
+    let active = true;
+    const apply = (u: { id: string; email?: string | null; user_metadata?: Record<string, unknown> } | null) => {
+      if (!u) {
+        setUser(null);
+        return;
+      }
+      const meta = (u.user_metadata ?? {}) as Record<string, string | undefined>;
+      const name =
+        meta.preferred_username || meta.user_name || meta.name || meta.full_name || (u.email ? u.email.split("@")[0] : "Collector");
+      setUser({ id: u.id, name, avatar: meta.avatar_url || meta.picture || null });
+    };
+    supabase.auth.getUser().then(({ data }) => {
+      if (active) {
+        apply(data.user);
+        setReady(true);
+      }
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (active) apply(session?.user ?? null);
+    });
+    return () => {
+      active = false;
+      sub.subscription.unsubscribe();
+    };
+  }, []);
+
+  async function signOut() {
+    setOpen(false);
+    await supabase?.auth.signOut();
+    setUser(null);
+    window.location.href = "/";
+  }
+
+  if (ready && user) {
+    return (
+      <div className="relative flex items-center gap-2">
+        <button
+          onClick={() => setOpen((v) => !v)}
+          className="flex items-center gap-2 rounded-full border-2 border-[var(--navy)] bg-white py-1 pl-1 pr-2.5 text-[var(--navy)] shadow-card"
+        >
+          {user.avatar ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={user.avatar} alt="" className="size-8 rounded-full object-cover" />
+          ) : (
+            <span className="grid size-8 place-items-center rounded-full bg-[var(--sky-soft)] text-xs font-black">
+              {user.name.slice(0, 1).toUpperCase()}
+            </span>
+          )}
+          <span className="hidden max-w-[120px] truncate text-sm font-black sm:block">{user.name}</span>
+        </button>
+        {open ? (
+          <>
+            <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+            <div className="absolute right-0 top-12 z-50 w-44 overflow-hidden rounded-xl border-2 border-[var(--navy)] bg-white shadow-card">
+              <Link href="/profile" onClick={() => setOpen(false)} className="block px-4 py-2.5 text-sm font-black text-[var(--navy)] hover:bg-[var(--sky-soft)]">
+                My profile
+              </Link>
+              <Link href="/binder" onClick={() => setOpen(false)} className="block px-4 py-2.5 text-sm font-black text-[var(--navy)] hover:bg-[var(--sky-soft)]">
+                My binder
+              </Link>
+              <button
+                onClick={signOut}
+                className="flex w-full items-center gap-2 border-t-2 border-[var(--line)] px-4 py-2.5 text-left text-sm font-black text-[var(--red)] hover:bg-[#fdecec]"
+              >
+                <LogOut size={15} /> Sign out
+              </button>
+            </div>
+          </>
+        ) : null}
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      <Button href="/auth" variant="primary" className="hidden min-h-10 px-4 text-sm sm:inline-flex">
+        <PokeballIcon size={18} />
+        Start Your Binder
+      </Button>
+      <Link
+        className="grid size-11 place-items-center rounded-full border-2 border-[var(--navy)] bg-white text-[var(--navy)] shadow-card"
+        href="/auth"
+        aria-label="Sign in"
+      >
+        <CircleUserRound size={19} />
+      </Link>
+    </div>
   );
 }
 

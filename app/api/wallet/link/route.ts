@@ -73,7 +73,8 @@ export async function POST(req: NextRequest) {
     .eq("id", user.id);
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 });
+    const message = error.code === "23505" ? "That wallet is already linked to another account." : error.message;
+    return NextResponse.json({ error: message }, { status: 400 });
   }
 
   return NextResponse.json({ ok: true, address: normalizedAddress, chain });

@@ -2,18 +2,42 @@ import { Award, BadgeCheck, Flame, Heart, History, Star, Trophy } from "lucide-r
 import { CardTile, PageShell, SectionHeader, Stat } from "@/components/ui";
 import { WalletLink } from "@/components/WalletLink";
 import { cards, collectors, reputationEvents } from "@/lib/data";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
-export default function ProfilePage() {
+export default async function ProfilePage() {
   const me = collectors[0];
   const publicCards = cards.filter((card) => card.owner === "You" || card.status === "for_trade").slice(0, 6);
+
+  // Show the real signed-in collector's identity when available.
+  let displayName = me.username;
+  let avatarUrl: string | null = null;
+  let initials = me.avatar;
+  const supabase = await createSupabaseServerClient();
+  if (supabase) {
+    const {
+      data: { user }
+    } = await supabase.auth.getUser();
+    if (user) {
+      const meta = (user.user_metadata ?? {}) as Record<string, string | undefined>;
+      displayName =
+        meta.preferred_username || meta.user_name || meta.name || meta.full_name || user.email?.split("@")[0] || me.username;
+      avatarUrl = meta.avatar_url || meta.picture || null;
+      initials = displayName.slice(0, 2).toUpperCase();
+    }
+  }
 
   return (
     <PageShell>
       <section className="mx-auto max-w-7xl px-4 py-8 md:px-6">
         <div className="glass mb-6 grid gap-6 rounded-2xl p-5 md:grid-cols-[260px_1fr]">
           <div className="text-center md:text-left">
-            <div className="mx-auto grid size-24 place-items-center rounded-full border border-volt/35 bg-volt/12 text-3xl font-black text-volt md:mx-0">{me.avatar}</div>
-            <h1 className="mt-4 text-3xl font-black text-white">{me.username}</h1>
+            {avatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={avatarUrl} alt={displayName} className="mx-auto size-24 rounded-full border border-volt/35 object-cover md:mx-0" />
+            ) : (
+              <div className="mx-auto grid size-24 place-items-center rounded-full border border-volt/35 bg-volt/12 text-3xl font-black text-volt md:mx-0">{initials}</div>
+            )}
+            <h1 className="mt-4 text-3xl font-black text-white">{displayName}</h1>
             <p className="mt-1 text-sm font-bold text-white/54">{me.level} · Favorite type: {me.favorite}</p>
           </div>
           <div>

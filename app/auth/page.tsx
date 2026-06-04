@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Mail, ShieldCheck, Sparkles } from "lucide-react";
 import { Button, PageShell, SectionHeader } from "@/components/ui";
 import { supabase } from "@/lib/supabase";
@@ -17,6 +17,12 @@ export default function AuthPage() {
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState("Sign in with Discord, or use an email magic link.");
+
+  // Surface OAuth errors handed back by /auth/callback (?error=...).
+  useEffect(() => {
+    const error = new URLSearchParams(window.location.search).get("error");
+    if (error) setStatus(`Sign-in failed: ${error}`);
+  }, []);
 
   async function signInWithDiscord() {
     if (!supabase) {

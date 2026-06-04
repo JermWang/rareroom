@@ -117,12 +117,12 @@ export function Header() {
   ];
 
   return (
-    <header className="sticky top-0 z-40 border-b-2 border-[var(--line)] bg-[#f8fcff]/85 backdrop-blur-xl">
-      <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between px-4 md:px-6">
-        <Link href="/" className="flex items-center">
+    <header className="app-header sticky top-0 z-40">
+      <div className="mx-auto grid h-[76px] max-w-7xl grid-cols-[auto_1fr_auto] items-center gap-4 px-4 md:px-6">
+        <Link href="/" className="flex items-center" aria-label="RareRoom home">
           <img src="/images/rareroom-logo-cropped.png" alt="RareRoom" className="h-12 w-auto" />
         </Link>
-        <nav className="hidden items-center gap-1 md:flex">
+        <nav className="app-header-nav hidden items-center justify-self-center md:flex">
           {nav.map((item) =>
             item.href === "/swap" ? (
               <Link key={item.href} href={item.href} className={cx("nav-swap", path === item.href && "nav-swap-active")}>
@@ -133,8 +133,8 @@ export function Header() {
                 key={item.href}
                 href={item.href}
                 className={cx(
-                  "inline-flex items-center rounded-full px-3.5 py-2 text-[14.5px] font-black text-[var(--muted)] transition hover:bg-[rgba(23,58,99,0.06)] hover:text-[var(--navy)]",
-                  path === item.href && "bg-[var(--sky-soft)] text-[var(--navy)]"
+                  "inline-flex items-center rounded-full px-3.5 py-2 text-[13px] font-black uppercase tracking-[0.08em] text-[var(--muted)] transition hover:text-[var(--navy)]",
+                  path === item.href && "bg-white/70 text-[var(--navy)] shadow-sm"
                 )}
               >
                 {item.label}
@@ -280,12 +280,12 @@ export function MobileNav() {
 
 export function PageShell({ children }: { children: ReactNode }) {
   return (
-    <>
+    <div className="app-shell">
       <Header />
       <main className="pb-24 md:pb-10">{children}</main>
       <MobileNav />
       <Footer />
-    </>
+    </div>
   );
 }
 
@@ -299,10 +299,10 @@ export function Footer() {
 
 export function SectionHeader({ title, copy, action }: { title: string; copy?: string; action?: ReactNode }) {
   return (
-    <div className="mb-5 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+    <div className="section-header mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
       <div>
-        <h2 className="text-2xl font-black tracking-normal text-[var(--navy)] md:text-3xl">{title}</h2>
-        {copy ? <p className="mt-2 max-w-2xl break-words text-sm font-bold leading-6 text-[var(--muted)]">{copy}</p> : null}
+        <h2 className="text-3xl font-black tracking-normal text-[var(--navy)] md:text-5xl">{title}</h2>
+        {copy ? <p className="mt-3 max-w-3xl break-words text-[15px] font-extrabold leading-7 text-[var(--muted)]">{copy}</p> : null}
       </div>
       {action}
     </div>

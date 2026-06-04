@@ -31,15 +31,15 @@ export default function AuthPage() {
   return (
     <PageShell>
       <section className="mx-auto grid min-h-[70vh] max-w-6xl place-items-center px-4 py-8 md:px-6">
-        <div className="glass w-full max-w-xl rounded-2xl p-6">
+        <div className="rr-panel w-full max-w-xl rounded-2xl p-6">
           <SectionHeader title="Start Your Binder" copy="Sign in with email now. Wallet proof can be connected later only when you need it." />
           <div className="grid gap-3">
-            <label className="text-xs font-black uppercase text-white/44">Email</label>
-            <div className="flex min-h-12 items-center gap-3 rounded-lg border border-line bg-white/[0.055] px-3">
-              <Mail size={18} className="text-white/44" />
-              <input value={email} onChange={(event) => setEmail(event.target.value)} placeholder="collector@example.com" className="w-full bg-transparent text-sm font-semibold text-white outline-none" />
+            <label className="text-xs font-black uppercase text-[var(--muted)]">Email</label>
+            <div className="flex min-h-12 items-center gap-3 rounded-lg border-2 border-[var(--line)] bg-white px-3">
+              <Mail size={18} className="text-[var(--muted)] shrink-0" />
+              <input value={email} onChange={(event) => setEmail(event.target.value)} placeholder="collector@example.com" className="w-full bg-transparent text-sm font-semibold text-[var(--navy)] outline-none placeholder:text-[var(--muted)]" />
             </div>
-            <button onClick={signIn} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-volt px-4 py-2 text-sm font-black text-ink shadow-glow transition hover:bg-white">
+            <button onClick={signIn} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[var(--sun)] px-4 py-2 text-sm font-black text-[var(--navy)] shadow-sm transition hover:bg-[var(--sun-deep)] hover:text-white">
               <Sparkles size={16} />
               Send magic link
             </button>
@@ -47,7 +47,7 @@ export default function AuthPage() {
               <ShieldCheck size={16} />
               Connect wallet for proof later
             </Button>
-            <p className="rounded-lg border border-line bg-white/[0.045] p-3 text-sm leading-6 text-white/58">{status}</p>
+            <p className="rounded-lg border border-[var(--line)] bg-[var(--sky-soft)] p-3 text-sm leading-6 text-[var(--navy)]">{status}</p>
           </div>
         </div>
       </section>

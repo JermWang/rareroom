@@ -3,9 +3,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { Plus, Upload } from "lucide-react";
 import { ActivityRail, Button, CardTile, PageShell, SearchBar, SectionHeader, Stat, cx } from "@/components/ui";
-import { CollectorCard, cards, filters, isVerified } from "@/lib/data";
+import { CardStatus, CollectorCard, cards, filters, isVerified } from "@/lib/data";
 import { loadImportedAsCards } from "@/lib/import";
-import { fetchUserBinderCards } from "@/lib/binder-db";
+import { fetchUserBinderCards, updateUserCardStatus } from "@/lib/binder-db";
 
 export default function BinderPage() {
   const [active, setActive] = useState("All Cards");
@@ -34,6 +34,13 @@ export default function BinderPage() {
   }, []);
 
   const allCards = useMemo(() => (usingSupabase ? imported : [...imported, ...cards]), [imported, usingSupabase]);
+
+  async function handleStatusChange(cardId: string, status: CardStatus) {
+    setImported((prev) => prev.map((c) => (c.id === cardId ? { ...c, status } : c)));
+    if (usingSupabase) {
+      await updateUserCardStatus(cardId, status);
+    }
+  }
 
   const visibleCards = useMemo(() => {
     if (active === "For Trade") return allCards.filter((card) => card.status === "for_trade");
@@ -70,18 +77,27 @@ export default function BinderPage() {
             <Stat label="Verified" value={allCards.filter((card) => isVerified(card.verificationStatus)).length} />
             <Stat label="Wishlist" value={allCards.filter((card) => card.status === "wishlist").length} />
           </div>
-          <div className="glass mb-5 rounded-2xl p-3">
+          <div className="rr-panel-soft mb-5 rounded-2xl p-3">
             <SearchBar placeholder="Search your binder" />
             <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
               {filters.map((filter) => (
-                <button key={filter} onClick={() => setActive(filter)} className={cx("shrink-0 rounded-lg px-3 py-2 text-xs font-black transition", active === filter ? "bg-volt text-ink" : "bg-white/8 text-white/58 hover:text-white")}>
+                <button
+                  key={filter}
+                  onClick={() => setActive(filter)}
+                  className={cx(
+                    "shrink-0 rounded-lg px-3 py-2 text-xs font-black transition",
+                    active === filter
+                      ? "bg-[var(--sun)] text-[var(--navy)] shadow-sm"
+                      : "border border-[var(--line)] bg-white text-[var(--muted)] hover:border-[var(--sky)] hover:text-[var(--navy)]"
+                  )}
+                >
                   {filter}
                 </button>
               ))}
             </div>
             <div className="mt-3 grid gap-3 sm:grid-cols-3">
               {["Generation", "Set", "Type", "Rarity", "Condition", "Language", "Holo / Reverse / Promo", "Verified only"].map((filter) => (
-                <select key={filter} className="min-h-10 rounded-lg border border-line bg-ink px-3 text-xs font-bold text-white/66 outline-none">
+                <select key={filter} className="min-h-10 rounded-lg border-2 border-[var(--line)] bg-white px-3 text-xs font-bold text-[var(--muted)] outline-none focus:border-[var(--sky)]">
                   <option>{filter}</option>
                 </select>
               ))}
@@ -89,7 +105,11 @@ export default function BinderPage() {
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {visibleCards.map((card) => (
-              <CardTile key={card.id} card={card} />
+              <CardTile
+                key={card.id}
+                card={card}
+                onStatusChange={card.imported ? (status) => handleStatusChange(card.id, status) : undefined}
+              />
             ))}
           </div>
         </div>

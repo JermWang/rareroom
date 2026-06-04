@@ -8,11 +8,11 @@ import {
   Bell,
   CircleUserRound,
   LayoutDashboard,
-  MessageSquare,
   Search,
   SlidersHorizontal,
   Sparkles,
   Store,
+  UploadCloud,
   UserRound,
   Wrench,
   Zap
@@ -98,7 +98,6 @@ export function Header() {
     { href: "/binder", label: "Binder" },
     { href: "/import", label: "Import" },
     { href: "/marketplace", label: "Marketplace" },
-    { href: "/gacha", label: "Packs" },
     { href: "/verification", label: "Verify" }
   ];
 
@@ -119,7 +118,7 @@ export function Header() {
                 key={item.href}
                 href={item.href}
                 className={cx(
-                  "rounded-full px-3.5 py-2 text-[14.5px] font-black text-[var(--muted)] transition hover:bg-[rgba(23,58,99,0.06)] hover:text-[var(--navy)]",
+                  "inline-flex items-center rounded-full px-3.5 py-2 text-[14.5px] font-black text-[var(--muted)] transition hover:bg-[rgba(23,58,99,0.06)] hover:text-[var(--navy)]",
                   path === item.href && "bg-[var(--sky-soft)] text-[var(--navy)]"
                 )}
               >
@@ -148,7 +147,7 @@ export function MobileNav() {
     { href: "/binder", label: "Binder", icon: LayoutDashboard },
     { href: "/marketplace", label: "Trades", icon: Store },
     { href: "/swap", label: "Swap", icon: Zap },
-    { href: "/messages", label: "Chat", icon: MessageSquare },
+    { href: "/import", label: "Import", icon: UploadCloud },
     { href: "/profile", label: "Me", icon: UserRound }
   ];
 
@@ -264,7 +263,7 @@ export function VerificationBadge({ status }: { status: CollectorCard["verificat
   return <span className={cx("rounded-full border-2 px-2 py-1 text-[11px] font-black", tone)}>{verificationCopy[status]}</span>;
 }
 
-export function CardTile({ card, compact = false }: { card: CollectorCard; compact?: boolean }) {
+export function CardTile({ card, compact = false, onStatusChange }: { card: CollectorCard; compact?: boolean; onStatusChange?: (status: CollectorCard["status"]) => void }) {
   const className = "group block rounded-[22px] border-2 border-[var(--navy)] bg-white p-3 shadow-card transition hover:-translate-y-1 hover:shadow-pop";
   const inner = (
     <>
@@ -285,7 +284,21 @@ export function CardTile({ card, compact = false }: { card: CollectorCard; compa
       </div>
       {!compact ? (
         <div className="mt-3 flex flex-wrap gap-2">
-          <StatusBadge status={card.status} />
+          {onStatusChange ? (
+            <select
+              value={card.status}
+              onChange={(e) => onStatusChange(e.target.value as CollectorCard["status"])}
+              onClick={(e) => e.stopPropagation()}
+              className="rounded-full border-2 border-[var(--navy)] bg-[var(--sky-soft)] px-2 py-1 text-[11px] font-black text-[var(--navy)] outline-none cursor-pointer"
+            >
+              <option value="owned">Owned</option>
+              <option value="for_trade">For Trade</option>
+              <option value="wishlist">Wishlist</option>
+              <option value="locked">Locked</option>
+            </select>
+          ) : (
+            <StatusBadge status={card.status} />
+          )}
           <VerificationBadge status={card.verificationStatus} />
         </div>
       ) : null}
@@ -355,8 +368,16 @@ function MiniProof({ tone, title, copy }: { tone: "mint" | "sun" | "sky"; title:
   );
 }
 
-export function CollectorRow({ name = collectors[0].username }: { name?: string }) {
+export function CollectorRow({ name = collectors[0].username, compact = false }: { name?: string; compact?: boolean }) {
   const collector = collectors.find((item) => item.username === name) ?? collectors[0];
+  if (compact) {
+    return (
+      <div className="flex items-center gap-1.5 min-w-0">
+        <div className="grid size-6 shrink-0 place-items-center rounded-full border border-[var(--navy)] bg-[var(--sun)] text-[9px] font-black text-[var(--navy)]">{collector.avatar}</div>
+        <span className="truncate text-xs font-black text-[var(--navy)]">{collector.username}</span>
+      </div>
+    );
+  }
   return (
     <div className="flex items-center gap-3">
       <div className="grid size-11 place-items-center rounded-full border-2 border-[var(--navy)] bg-[var(--sun)] text-sm font-black text-[var(--navy)]">{collector.avatar}</div>

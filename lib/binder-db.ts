@@ -166,6 +166,191 @@ export async function saveStoredCardsToSupabase(cards: StoredCard[]) {
   return { saved: count > 0, count };
 }
 
+export type MarketplaceListing = CollectorCard & { ownerUserId: string };
+
+export async function fetchMarketplaceListings(): Promise<MarketplaceListing[] | null> {
+  const supabase = createSupabaseBrowserClient();
+  if (!supabase) return null;
+
+  const { data, error } = await supabase
+    .from("user_cards")
+    .select(
+      `
+      id,
+      user_id,
+      condition,
+      language,
+      edition,
+      is_holo,
+      status,
+      verification_status,
+      estimated_value,
+      cards (
+        id,
+        name,
+        set_name,
+        card_number,
+        rarity,
+        type,
+        generation,
+        image_url
+      )
+    `
+    )
+    .eq("status", "for_trade")
+    .order("created_at", { ascending: false })
+    .limit(100);
+
+  if (error) {
+    console.warn("Failed to fetch marketplace listings", error.message);
+    return null;
+  }
+
+  return ((data ?? []) as unknown as (UserCardRow & { user_id: string })[]).flatMap((row) => {
+    if (!row.cards) return [];
+    return {
+      id: row.id,
+      ownerUserId: row.user_id,
+      name: row.cards.name,
+      setName: row.cards.set_name,
+      cardNumber: row.cards.card_number,
+      rarity: row.cards.rarity,
+      type: normalizeCardType(row.cards.type),
+      generation: row.cards.generation ?? "",
+      condition: row.condition ?? "Near Mint",
+      language: row.language ?? "English",
+      edition: row.edition ?? "",
+      isHolo: Boolean(row.is_holo),
+      status: "for_trade" as CardStatus,
+      verificationStatus: row.verification_status,
+      estimatedValue: row.estimated_value === null ? "—" : `$${row.estimated_value}`,
+      owner: "Collector",
+      imageUrl: row.cards.image_url ?? "",
+      imported: true
+    } satisfies MarketplaceListing;
+  });
+}
+
+export async function fetchSingleUserCard(userCardId: string): Promise<(CollectorCard & { ownerUserId: string }) | null> {
+  const supabase = createSupabaseBrowserClient();
+  if (!supabase) return null;
+
+  const { data, error } = await supabase
+    .from("user_cards")
+    .select(
+      `
+      id,
+      user_id,
+      condition,
+      language,
+      edition,
+      is_holo,
+      status,
+      verification_status,
+      estimated_value,
+      cards (
+        id,
+        name,
+        set_name,
+        card_number,
+        rarity,
+        type,
+        generation,
+        image_url
+      )
+    `
+    )
+    .eq("id", userCardId)
+    .single();
+
+  if (error || !data || !data.cards) return null;
+  const row = data as unknown as UserCardRow & { user_id: string };
+  if (!row.cards) return null;
+  return {
+    id: row.id,
+    ownerUserId: row.user_id,
+    name: row.cards.name,
+    setName: row.cards.set_name,
+    cardNumber: row.cards.card_number,
+    rarity: row.cards.rarity,
+    type: normalizeCardType(row.cards.type),
+    generation: row.cards.generation ?? "",
+    condition: row.condition ?? "Near Mint",
+    language: row.language ?? "English",
+    edition: row.edition ?? "",
+    isHolo: Boolean(row.is_holo),
+    status: row.status,
+    verificationStatus: row.verification_status,
+    estimatedValue: row.estimated_value === null ? "—" : `$${row.estimated_value}`,
+    owner: "Collector",
+    imageUrl: row.cards.image_url ?? "",
+    imported: true
+  };
+}
+
+export type CreateTradeResult =
+  | { ok: true; tradeId: string }
+  | { ok: false; reason: string };
+
+export async function createTrade(opts: {
+  proposerCardIds: string[];
+  receiverCardIds: string[];
+  receiverUserId: string;
+  note?: string;
+}): Promise<CreateTradeResult> {
+  const supabase = createSupabaseBrowserClient();
+  if (!supabase) return { ok: false, reason: "Supabase is not configured." };
+
+  const { data: userData } = await supabase.auth.getUser();
+  const user = userData.user;
+  if (!user) return { ok: false, reason: "Sign in to send a trade." };
+
+  if (opts.proposerCardIds.length === 0) return { ok: false, reason: "Add at least one card to your offer." };
+  if (opts.receiverCardIds.length === 0) return { ok: false, reason: "Select at least one card you want in return." };
+
+  const { data: trade, error: tradeError } = await supabase
+    .from("trades")
+    .insert({
+      proposer_id: user.id,
+      receiver_id: opts.receiverUserId,
+      status: "sent",
+    })
+    .select("id")
+    .single();
+
+  if (tradeError || !trade) {
+    return { ok: false, reason: tradeError?.message ?? "Failed to create trade." };
+  }
+
+  const items = [
+    ...opts.proposerCardIds.map((id) => ({ trade_id: trade.id, user_card_id: id, side: "proposer" })),
+    ...opts.receiverCardIds.map((id) => ({ trade_id: trade.id, user_card_id: id, side: "receiver" })),
+  ];
+
+  const { error: itemsError } = await supabase.from("trade_items").insert(items);
+  if (itemsError) {
+    return { ok: false, reason: itemsError.message };
+  }
+
+  return { ok: true, tradeId: trade.id };
+}
+
+export async function updateUserCardStatus(userCardId: string, status: CardStatus): Promise<boolean> {
+  const supabase = createSupabaseBrowserClient();
+  if (!supabase) return false;
+
+  const { error } = await supabase
+    .from("user_cards")
+    .update({ status })
+    .eq("id", userCardId);
+
+  if (error) {
+    console.warn("Failed to update card status", userCardId, error.message);
+    return false;
+  }
+  return true;
+}
+
 function normalizeCardType(type: string): CardType {
   const allowed = new Set(["Fire", "Water", "Grass", "Lightning", "Psychic", "Fighting", "Darkness", "Metal", "Dragon", "Fairy", "Colorless"]);
   return allowed.has(type) ? (type as CardType) : "Colorless";

@@ -713,20 +713,6 @@ h3 {
   color: var(--sky);
 }
 
-.strategy-mantra {
-  position: absolute;
-  right: clamp(22px, 3vw, 46px);
-  bottom: 92px;
-  z-index: 3;
-  color: rgba(23, 58, 99, 0.62);
-  font-family: var(--font-display);
-  font-size: clamp(22px, 2.4vw, 34px);
-  font-weight: 900;
-  letter-spacing: 0;
-  line-height: 1;
-  pointer-events: none;
-}
-
 .partner-marquee {
   position: relative;
   z-index: 3;

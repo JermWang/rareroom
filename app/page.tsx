@@ -69,9 +69,6 @@ export default function LandingPage() {
               </div>
             </div>
           </div>
-          <div className="strategy-mantra" aria-hidden="true">
-            Import.Prove.Swap.
-          </div>
           <PartnerMarquee />
         </section>
 

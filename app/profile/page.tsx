@@ -1,5 +1,6 @@
 import { Award, BadgeCheck, Flame, Heart, History, Star, Trophy } from "lucide-react";
 import { CardTile, PageShell, SectionHeader, Stat } from "@/components/ui";
+import { WalletLink } from "@/components/WalletLink";
 import { cards, collectors, reputationEvents } from "@/lib/data";
 
 export default function ProfilePage() {
@@ -42,6 +43,7 @@ export default function ProfilePage() {
             </div>
           </div>
           <aside className="space-y-4">
+            <WalletLink />
             <Panel title="Wishlist" icon={<Heart className="text-danger" size={20} />}>
               <p className="text-sm leading-6 text-white/58">Gengar VMAX alt art, Base Set holos, and clean alt-art chase cards.</p>
             </Panel>

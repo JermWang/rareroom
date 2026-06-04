@@ -96,7 +96,7 @@ export default function AuthPage() {
               Send magic link
             </button>
 
-            <Button variant="secondary">
+            <Button variant="secondary" href="/profile">
               <ShieldCheck size={16} />
               Connect wallet for proof later
             </Button>

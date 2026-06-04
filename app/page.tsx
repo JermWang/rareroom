@@ -42,7 +42,6 @@ export default function LandingPage() {
             </div>
 
             <div className="strategy-copy">
-              <p className="strategy-status">Live binder network</p>
               <h1>
                 RARE
                 <span>ROOM</span>

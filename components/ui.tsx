@@ -387,6 +387,7 @@ export function TradeCycle3D() {
       const scene = new THREE.Scene();
       const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
       camera.position.set(0, 0.38, 6.4);
+      camera.lookAt(0, 0, 0);
 
       const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, preserveDrawingBuffer: true });
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -394,7 +395,7 @@ export function TradeCycle3D() {
       mount.appendChild(renderer.domElement);
 
       const group = new THREE.Group();
-      group.position.y = 0.46;
+      group.position.y = 0;
       scene.add(group);
 
       const ambient = new THREE.AmbientLight(0xffffff, 1.5);
@@ -412,7 +413,6 @@ export function TradeCycle3D() {
       const cardWidth = 1.35;
       const cardHeight = 1.88;
       const segment = (Math.PI * 2) / tradeCycleSteps.length;
-      const cardMeshes: Array<import("three").Mesh> = [];
 
       tradeCycleSteps.forEach((step, index) => {
         const texture = loader.load(step.imageUrl);
@@ -432,17 +432,7 @@ export function TradeCycle3D() {
         const angle = index * segment;
         mesh.position.set(Math.sin(angle) * radius, 0, Math.cos(angle) * radius);
         mesh.rotation.y = angle;
-        mesh.userData.baseY = index % 2 === 0 ? 0.04 : -0.04;
         group.add(mesh);
-        cardMeshes.push(mesh);
-
-        const shadow = new THREE.Mesh(
-          new THREE.PlaneGeometry(cardWidth * 1.05, cardHeight * 1.05),
-          new THREE.MeshBasicMaterial({ color: 0x173a63, transparent: true, opacity: 0.16, side: THREE.DoubleSide })
-        );
-        shadow.position.set(mesh.position.x, mesh.position.y - 0.05, mesh.position.z - 0.04);
-        shadow.rotation.y = angle;
-        group.add(shadow);
       });
 
       const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -454,7 +444,7 @@ export function TradeCycle3D() {
         const height = mount.clientHeight;
         const sceneScale = width < 520 ? 0.68 : width < 900 ? 0.82 : 1;
         group.scale.setScalar(sceneScale);
-        group.position.y = width < 520 ? 0.54 : 0.46;
+        group.position.y = 0;
         camera.aspect = width / Math.max(height, 1);
         camera.updateProjectionMatrix();
         renderer.setSize(width, height, false);
@@ -474,9 +464,6 @@ export function TradeCycle3D() {
         }
 
         group.rotation.y += (targetRotationRef.current - group.rotation.y) * 0.08;
-        cardMeshes.forEach((mesh, index) => {
-          mesh.position.y = mesh.userData.baseY + Math.sin(now * 0.0016 + index * 0.75) * 0.045;
-        });
         updateActive(group.rotation.y);
         renderer.render(scene, camera);
         animationFrame = requestAnimationFrame(animate);
@@ -620,7 +607,7 @@ export function ActivityRail() {
   return (
     <aside className="glass rounded-[26px] p-4">
       <div className="mb-4 flex items-center justify-between">
-        <h3 className="font-black text-[var(--navy)]">Live Trust Feed</h3>
+        <h3 className="font-black text-[var(--navy)]">Trust Feed</h3>
         <Bell size={17} className="text-[var(--muted)]" />
       </div>
       <div className="space-y-3">

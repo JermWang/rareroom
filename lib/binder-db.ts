@@ -10,6 +10,7 @@ type UserCardRow = {
   is_holo: boolean | null;
   status: CardStatus;
   verification_status: VerificationStatus;
+  proof_url: string | null;
   estimated_value: number | null;
   cards: {
     id: string;
@@ -42,6 +43,7 @@ export async function fetchUserBinderCards(): Promise<CollectorCard[] | null> {
       is_holo,
       status,
       verification_status,
+      proof_url,
       estimated_value,
       cards (
         id,
@@ -82,6 +84,7 @@ export async function fetchUserBinderCards(): Promise<CollectorCard[] | null> {
       estimatedValue: row.estimated_value === null ? "—" : `$${row.estimated_value}`,
       owner: "You",
       imageUrl: row.cards.image_url ?? "",
+      proofUrl: row.proof_url ?? undefined,
       imported: true
     } satisfies CollectorCard;
   });
@@ -184,6 +187,7 @@ export async function fetchMarketplaceListings(): Promise<MarketplaceListing[] |
       is_holo,
       status,
       verification_status,
+      proof_url,
       estimated_value,
       cards (
         id,
@@ -226,6 +230,7 @@ export async function fetchMarketplaceListings(): Promise<MarketplaceListing[] |
       estimatedValue: row.estimated_value === null ? "—" : `$${row.estimated_value}`,
       owner: "Collector",
       imageUrl: row.cards.image_url ?? "",
+      proofUrl: row.proof_url ?? undefined,
       imported: true
     } satisfies MarketplaceListing;
   });
@@ -247,6 +252,7 @@ export async function fetchSingleUserCard(userCardId: string): Promise<(Collecto
       is_holo,
       status,
       verification_status,
+      proof_url,
       estimated_value,
       cards (
         id,
@@ -284,6 +290,7 @@ export async function fetchSingleUserCard(userCardId: string): Promise<(Collecto
     estimatedValue: row.estimated_value === null ? "—" : `$${row.estimated_value}`,
     owner: "Collector",
     imageUrl: row.cards.image_url ?? "",
+    proofUrl: row.proof_url ?? undefined,
     imported: true
   };
 }

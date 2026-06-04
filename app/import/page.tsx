@@ -7,10 +7,14 @@ import {
   CheckCircle2,
   ClipboardList,
   FileSpreadsheet,
+  Gamepad2,
   Info,
   Loader2,
+  PlugZap,
   Search,
+  ShieldCheck,
   Sparkles,
+  Smartphone,
   Trash2,
   Upload,
   X
@@ -32,7 +36,7 @@ import {
 } from "@/lib/import";
 import { searchCards, TcgdexBrief } from "@/lib/tcgdex";
 
-type Tab = "paste" | "csv" | "search" | "scan";
+type Tab = "connect" | "csv" | "paste" | "scan" | "search";
 
 const SAMPLE = `3 Charizard - Base Set - 4/102
 1 Umbreon VMAX 215/203
@@ -65,7 +69,7 @@ function Thumb({ src, alt, type }: { src?: string; alt: string; type?: MatchedRo
 }
 
 export default function ImportPage() {
-  const [tab, setTab] = useState<Tab>("paste");
+  const [tab, setTab] = useState<Tab>("connect");
   const [pocket, setPocket] = useState(false);
   const [pasteText, setPasteText] = useState("");
   const [rows, setRows] = useState<MatchedRow[]>([]);
@@ -208,18 +212,51 @@ export default function ImportPage() {
   const importedTotal = useMemo(() => imported.reduce((sum, c) => sum + c.qty, 0), [imported]);
 
   const tabs: { id: Tab; label: string; icon: typeof Upload }[] = [
-    { id: "paste", label: "Paste list", icon: ClipboardList },
-    { id: "csv", label: "CSV file", icon: FileSpreadsheet },
-    { id: "search", label: "Search & add", icon: Search },
-    { id: "scan", label: "Scan", icon: Camera }
+    { id: "connect", label: "Connect source", icon: PlugZap },
+    { id: "csv", label: "Upload export", icon: FileSpreadsheet },
+    { id: "paste", label: "Paste export", icon: ClipboardList },
+    { id: "scan", label: "Scan screenshot", icon: Camera },
+    { id: "search", label: "Manual fallback", icon: Search }
+  ];
+
+  const connectedSources = [
+    {
+      name: "PTCG Live / pkmn.gg",
+      detail: "Export or copy your online collection list, then RareRoom matches the cards in bulk.",
+      icon: Gamepad2,
+      action: "Paste export",
+      tab: "paste" as Tab
+    },
+    {
+      name: "TCG Pocket",
+      detail: "Use Pocket mode for card matching, then paste or scan a collection screenshot.",
+      icon: Smartphone,
+      action: "Use Pocket mode",
+      tab: "scan" as Tab,
+      pocket: true
+    },
+    {
+      name: "Collectr / Pokellector",
+      detail: "Upload a CSV export from your collection tracker instead of entering cards one by one.",
+      icon: FileSpreadsheet,
+      action: "Upload CSV",
+      tab: "csv" as Tab
+    },
+    {
+      name: "Proof-backed imports",
+      detail: "Attach receipts, screenshots, platform exports, or wallet signatures for authenticity after import.",
+      icon: ShieldCheck,
+      action: "Review proof flow",
+      tab: "connect" as Tab
+    }
   ];
 
   return (
     <PageShell>
       <section className="mx-auto max-w-7xl px-4 py-8 md:px-6">
         <SectionHeader
-          title="Import your collection"
-          copy="Bring cards in from PTCG Live, Collectr, Pokellector, or a TCG Pocket screenshot list. We match each card to the catalog so your binder fills in automatically."
+          title="Connect your collection"
+          copy="Start from the places you already hold cards: PTCG Live, TCG Pocket, Collectr, Pokellector, CSV exports, or screenshots. RareRoom bulk-matches your collection first; manual card entry is only the fallback."
           action={
             <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-line bg-white/[0.05] px-3 py-2 text-xs font-black text-white/72">
               <input type="checkbox" checked={pocket} onChange={(e) => setPocket(e.target.checked)} className="accent-volt" />
@@ -231,13 +268,12 @@ export default function ImportPage() {
         <div className="mb-5 flex items-start gap-3 rounded-xl border border-line bg-white/[0.045] p-4 text-sm leading-6 text-[var(--muted)]">
           <Info size={18} className="mt-0.5 shrink-0 text-sky" />
           <p>
-            No Pokémon platform offers a free &quot;sign in and sync&quot; API, so RareRoom imports from{" "}
-            <span className="font-black text-[var(--navy)]">exports and scans</span>. Paste a deck/collection list, upload a CSV export, or
-            search the live catalog. Card data from{" "}
+            Best path: connect a collection source by export, screenshot, or bulk list, then let RareRoom match everything automatically. Manual
+            search is reserved for one-off corrections. Card data from{" "}
             <a href="https://tcgdex.dev" target="_blank" rel="noreferrer" className="font-black text-volt underline">
               TCGdex
             </a>{" "}
-            (includes TCG Pocket).
+            includes TCG Pocket.
           </p>
         </div>
 
@@ -265,16 +301,55 @@ export default function ImportPage() {
 
             {/* Source panel */}
             <div className="glass rounded-2xl p-5">
+              {tab === "connect" && (
+                <div>
+                  <div className="mb-5 max-w-2xl">
+                    <h2 className="font-black text-white">Choose where your cards already live</h2>
+                    <p className="mt-2 text-sm font-bold leading-6 text-white/52">
+                      Prioritize source-backed imports so collectors can move an existing digital collection into RareRoom in minutes.
+                    </p>
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {connectedSources.map((source) => {
+                      const Icon = source.icon;
+                      return (
+                        <button
+                          key={source.name}
+                          onClick={() => {
+                            if (source.pocket) setPocket(true);
+                            setTab(source.tab);
+                          }}
+                          className="group rounded-2xl border border-white/12 bg-white/[0.045] p-4 text-left transition hover:border-volt/55 hover:bg-white/[0.07]"
+                        >
+                          <div className="flex items-start gap-3">
+                            <span className="grid size-10 shrink-0 place-items-center rounded-full border border-white/14 bg-white/[0.06] text-volt">
+                              <Icon size={19} />
+                            </span>
+                            <div>
+                              <h3 className="font-black text-white">{source.name}</h3>
+                              <p className="mt-1 text-sm font-bold leading-5 text-white/52">{source.detail}</p>
+                              <span className="mt-4 inline-flex rounded-full bg-volt px-3 py-1 text-xs font-black text-ink transition group-hover:-translate-y-0.5">
+                                {source.action}
+                              </span>
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               {tab === "paste" && (
                 <div>
                   <div className="mb-2 flex items-center justify-between">
-                    <h2 className="font-black text-white">Paste a card list</h2>
+                    <h2 className="font-black text-white">Paste an exported collection list</h2>
                     <button onClick={() => setPasteText(SAMPLE)} className="text-xs font-black text-volt hover:underline">
                       Use sample
                     </button>
                   </div>
                   <p className="mb-3 text-xs leading-5 text-white/48">
-                    One card per line. Quantities and set/number are optional — e.g. <code className="text-white/70">3 Charizard - Base Set - 4/102</code>.
+                    Paste from PTCG Live, pkmn.gg, TCG Pocket notes, or another tracker. One card per line; quantities and set/number are optional.
                   </p>
                   <textarea
                     value={pasteText}
@@ -291,9 +366,9 @@ export default function ImportPage() {
 
               {tab === "csv" && (
                 <div>
-                  <h2 className="mb-2 font-black text-white">Upload a CSV export</h2>
+                  <h2 className="mb-2 font-black text-white">Upload a collection export</h2>
                   <p className="mb-3 text-xs leading-5 text-white/48">
-                    Works with Collectr, Pokellector, and TCGplayer-style exports. We auto-detect Name, Set, Number, and Quantity columns.
+                    Works with Collectr, Pokellector, TCGplayer-style exports, and any tracker with Name, Set, Number, and Quantity columns.
                   </p>
                   <button
                     onClick={() => fileRef.current?.click()}
@@ -317,7 +392,10 @@ export default function ImportPage() {
 
               {tab === "search" && (
                 <div>
-                  <h2 className="mb-2 font-black text-white">Search the live catalog</h2>
+                  <h2 className="mb-2 font-black text-white">Manual fallback search</h2>
+                  <p className="mb-3 text-xs leading-5 text-white/48">
+                    Use this only to fix a missing match or add a single card. Bulk source imports should be the default.
+                  </p>
                   <div className="flex min-h-12 items-center gap-3 rounded-lg border border-line bg-white/[0.055] px-3">
                     <Search size={18} className="text-white/44" />
                     <input
@@ -342,7 +420,7 @@ export default function ImportPage() {
                       </button>
                     ))}
                     {!searching && results.length === 0 ? (
-                      <p className="col-span-full text-sm text-white/40">Search to add cards one at a time.</p>
+                      <p className="col-span-full text-sm text-white/40">Search only when a source import misses something.</p>
                     ) : null}
                   </div>
                 </div>
@@ -481,11 +559,11 @@ export default function ImportPage() {
             <div className="glass rounded-2xl p-4">
               <h3 className="mb-2 font-black text-white">Supported sources</h3>
               <ul className="space-y-1.5 text-sm text-white/58">
-                <li>• PTCG Live / pkmn.gg list (paste)</li>
-                <li>• Collectr export (CSV)</li>
-                <li>• Pokellector export (CSV)</li>
-                <li>• TCG Pocket screenshot list (paste / scan)</li>
-                <li>• Live catalog search (TCGdex)</li>
+                <li>Primary: PTCG Live / pkmn.gg collection export</li>
+                <li>Primary: TCG Pocket screenshot or pasted list</li>
+                <li>Primary: Collectr / Pokellector CSV export</li>
+                <li>Primary: TCGplayer-style CSV export</li>
+                <li>Fallback: manual TCGdex search for corrections</li>
               </ul>
             </div>
           </aside>

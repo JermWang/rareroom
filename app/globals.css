@@ -695,16 +695,26 @@ h3 {
   margin: 0;
   color: var(--navy);
   font-size: clamp(86px, 11.2vw, 168px);
-  font-weight: 900;
+  font-weight: 1000;
   letter-spacing: 0;
   line-height: 0.82;
   text-transform: uppercase;
+  -webkit-text-stroke: 1.2px var(--navy);
+  text-shadow:
+    1px 0 0 var(--navy),
+    -1px 0 0 var(--navy),
+    0 1px 0 var(--navy);
 }
 
 .strategy-copy h1 span {
   display: block;
   color: var(--sky);
-  text-shadow: 0 12px 34px rgba(54, 171, 232, 0.22);
+  -webkit-text-stroke: 1.2px var(--sky);
+  text-shadow:
+    1px 0 0 var(--sky),
+    -1px 0 0 var(--sky),
+    0 1px 0 var(--sky),
+    0 12px 34px rgba(54, 171, 232, 0.22);
 }
 
 .strategy-copy h2 {

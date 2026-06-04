@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { CSSProperties, ReactNode, useEffect, useRef, useState } from "react";
+import { FloatingTradeChat } from "@/components/FloatingTradeChat";
 import {
   BadgeCheck,
   Bell,
@@ -284,6 +285,7 @@ export function PageShell({ children }: { children: ReactNode }) {
       <Header />
       <main className="pb-24 md:pb-10">{children}</main>
       <MobileNav />
+      <FloatingTradeChat />
       <Footer />
     </div>
   );

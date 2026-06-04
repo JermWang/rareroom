@@ -45,6 +45,7 @@ export type CollectorCard = {
   estimatedValue: string;
   owner: string;
   imageUrl: string;
+  proofUrl?: string;
   artist?: string;
   imported?: boolean;
 };

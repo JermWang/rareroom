@@ -1,9 +1,10 @@
 "use client";
 
 import { Suspense, useEffect, useMemo, useState } from "react";
+import type { ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
-import { ArrowRightLeft, CheckCircle2, MessageSquare, Plus, RefreshCw, ShieldCheck } from "lucide-react";
-import { Button, CardArt, PageShell, SectionHeader, VerificationBadge, cx } from "@/components/ui";
+import { ArrowRightLeft, CheckCircle2, Maximize2, MessageSquare, Plus, RefreshCw, ShieldCheck, X } from "lucide-react";
+import { Button, CardArt, PageShell, SectionHeader, cx } from "@/components/ui";
 import { CollectorCard, cards, tradeStatuses } from "@/lib/data";
 import { createTrade, fetchSingleUserCard, fetchUserBinderCards } from "@/lib/binder-db";
 
@@ -30,6 +31,7 @@ function SwapPageInner() {
   const [myCards, setMyCards] = useState<CollectorCard[]>([]);
   const [selectedMyCardIds, setSelectedMyCardIds] = useState<Set<string>>(new Set());
   const [usingSupabase, setUsingSupabase] = useState(false);
+  const [previewCard, setPreviewCard] = useState<CollectorCard | null>(null);
 
   useEffect(() => {
     fetchUserBinderCards().then((remote) => {
@@ -67,6 +69,10 @@ function SwapPageInner() {
     });
   }
 
+  function openTradeChat() {
+    window.dispatchEvent(new Event("rareroom:open-trade-chat"));
+  }
+
   async function sendTrade() {
     if (!usingSupabase || !requestedCard?.ownerUserId) {
       setResult({ ok: false, message: "Sign in and open a trade from the Marketplace to send a real offer." });
@@ -96,7 +102,7 @@ function SwapPageInner() {
           title="Swap Builder"
           copy="Build a visual trade, compare value balance, match wishlists, and require both collectors to confirm before verification."
           action={
-            <Button href="/messages" variant="secondary" className="min-h-11 px-5 text-sm">
+            <Button onClick={openTradeChat} variant="secondary" className="min-h-11 px-5 text-sm">
               <MessageSquare size={16} />
               Trade chat
             </Button>
@@ -133,13 +139,13 @@ function SwapPageInner() {
             </div>
             <div className="space-y-3">
               {myCards.map((card) => (
-                <button
+                <TradeCardRow
                   key={card.id}
-                  onClick={() => toggleMyCard(card.id)}
-                  className={cx("w-full text-left transition", selectedMyCardIds.has(card.id) ? "opacity-100" : "opacity-45")}
-                >
-                  <TradeCardRow card={card} selected={selectedMyCardIds.has(card.id)} />
-                </button>
+                  card={card}
+                  selected={selectedMyCardIds.has(card.id)}
+                  onSelect={() => toggleMyCard(card.id)}
+                  onPreview={() => setPreviewCard(card)}
+                />
               ))}
               {myCards.length === 0 && <p className="py-4 text-center text-sm text-[var(--muted)]">No cards marked for trade in your binder.</p>}
             </div>
@@ -187,7 +193,7 @@ function SwapPageInner() {
                 <RefreshCw size={16} />
                 Suggest alternatives
               </Button>
-              <Button href="/messages" variant="secondary">
+              <Button onClick={openTradeChat} variant="secondary">
                 <MessageSquare size={16} />
                 Open trade chat
               </Button>
@@ -208,7 +214,7 @@ function SwapPageInner() {
               {loadingRequested ? (
                 <div className="h-24 animate-pulse rounded-[20px] bg-white/72" />
               ) : (
-                theirCards.map((card) => <TradeCardRow key={card.id} card={card} />)
+                theirCards.map((card) => <TradeCardRow key={card.id} card={card} onPreview={() => setPreviewCard(card)} />)
               )}
             </div>
           </div>
@@ -227,6 +233,7 @@ function SwapPageInner() {
             </div>
           ))}
         </div>
+        {previewCard ? <CardPreviewModal card={previewCard} onClose={() => setPreviewCard(null)} /> : null}
       </section>
     </PageShell>
   );
@@ -246,28 +253,166 @@ function Meter({ label, value }: { label: string; value: string }) {
   );
 }
 
-function TradeCardRow({ card, selected = true }: { card: CollectorCard; selected?: boolean }) {
+function TradeCardRow({
+  card,
+  selected = true,
+  onSelect,
+  onPreview
+}: {
+  card: CollectorCard;
+  selected?: boolean;
+  onSelect?: () => void;
+  onPreview?: () => void;
+}) {
+  const proofLabel = getProofLabel(card);
+
   return (
     <div
       className={cx(
-        "group grid grid-cols-[58px_1fr_auto] items-center gap-3 rounded-[20px] border bg-white/72 p-2.5 shadow-[0_16px_34px_-28px_rgba(23,58,99,0.6)] transition hover:-translate-y-0.5 hover:bg-white",
-        selected ? "border-[rgba(23,58,99,0.2)] ring-2 ring-[rgba(255,201,60,0.45)]" : "border-[rgba(23,58,99,0.12)]"
+        "group grid grid-cols-[58px_1fr_auto] items-center gap-3 rounded-[18px] border bg-white/58 p-2.5 transition hover:bg-white/82",
+        selected ? "border-[rgba(23,58,99,0.18)] shadow-[0_12px_28px_-24px_rgba(23,58,99,0.55)]" : "border-[rgba(23,58,99,0.08)] opacity-55"
       )}
     >
-      <div className="w-[58px]">
+      <button
+        type="button"
+        onClick={onPreview}
+        className="relative w-[58px] rounded-[14px] text-left outline-none transition focus-visible:ring-2 focus-visible:ring-[var(--sky)]"
+        aria-label={`Enlarge ${card.name}`}
+      >
         <CardArt card={card} />
-      </div>
+        <span className="absolute inset-x-1 bottom-1 grid h-6 place-items-center rounded-full border border-[rgba(23,58,99,0.22)] bg-white/86 text-[var(--navy)] opacity-0 shadow-sm transition group-hover:opacity-100 group-focus-visible:opacity-100">
+          <Maximize2 size={12} />
+        </span>
+      </button>
       <div className="min-w-0">
         <h3 className="truncate text-sm font-black text-[var(--navy)]">{card.name}</h3>
         <p className="mt-0.5 truncate text-xs font-bold text-[var(--muted)]">{card.setName}</p>
-        <div className="mt-2 flex flex-wrap gap-1.5">
-          <VerificationBadge status={card.verificationStatus} />
-          <span className="rounded-full border border-[rgba(23,58,99,0.16)] bg-[var(--sky-soft)] px-2 py-1 text-[11px] font-black text-[var(--sky-deep)]">
-            {card.condition}
-          </span>
+        <p className="mt-2 truncate text-[11px] font-black uppercase tracking-[0.06em] text-[var(--sky-deep)]">
+          <ProofLink card={card}>{proofLabel}</ProofLink> <span className="text-[rgba(23,58,99,0.28)]">/</span> {card.condition}
+        </p>
+      </div>
+      <div className="grid justify-items-end gap-2">
+        <span className="shrink-0 text-right text-sm font-black text-[var(--sun-deep)]">{card.estimatedValue}</span>
+        {onSelect ? (
+          <button
+            type="button"
+            onClick={onSelect}
+            className={cx(
+              "rounded-full px-2.5 py-1 text-[11px] font-black transition",
+              selected ? "bg-[var(--navy)] text-white" : "bg-white/72 text-[var(--navy)]"
+            )}
+          >
+            {selected ? "Selected" : "Add"}
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={onPreview}
+            className="rounded-full bg-white/72 px-2.5 py-1 text-[11px] font-black text-[var(--navy)] transition hover:bg-white"
+          >
+            View
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function CardPreviewModal({ card, onClose }: { card: CollectorCard; onClose: () => void }) {
+  const proofLabel = getProofLabel(card);
+
+  return (
+    <div className="fixed inset-0 z-[80] grid place-items-start overflow-y-auto bg-[rgba(10,31,55,0.48)] p-4 backdrop-blur-sm md:place-items-center" onClick={onClose}>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={`${card.name} card preview`}
+        className="grid w-full max-w-4xl gap-5 rounded-[30px] border-2 border-[var(--navy)] bg-[#edf9ff] p-4 shadow-[0_34px_90px_-34px_rgba(10,31,55,0.82)] md:grid-cols-[minmax(260px,360px)_1fr] md:p-5"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="mx-auto w-full max-w-[340px]">
+          <CardArt card={card} large />
+        </div>
+        <div className="flex min-w-0 flex-col">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--sky-deep)]">Card preview</p>
+              <h2 className="mt-2 font-display text-4xl font-black leading-none text-[var(--navy)]">{card.name}</h2>
+              <p className="mt-2 text-sm font-black text-[var(--muted)]">
+                {card.setName} - {card.cardNumber}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="grid size-10 shrink-0 place-items-center rounded-full border border-[rgba(23,58,99,0.18)] bg-white text-[var(--navy)]"
+              aria-label="Close card preview"
+            >
+              <X size={18} />
+            </button>
+          </div>
+
+          <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 border-y border-[rgba(23,58,99,0.14)] py-3 text-sm font-black">
+            <ProofLink card={card} className="text-[var(--mint)]">{proofLabel}</ProofLink>
+            <span className="text-[var(--sun-deep)]">{card.estimatedValue}</span>
+            <span className="text-[var(--muted)]">{card.condition}</span>
+          </div>
+
+          <dl className="mt-5 divide-y divide-[rgba(23,58,99,0.12)] text-sm font-bold text-[var(--muted)]">
+            {[
+              ["Rarity", card.rarity],
+              ["Type", card.type],
+              ["Generation", card.generation],
+              ["Language", card.language],
+              ["Edition", card.edition || "Standard"],
+              ["Owner", card.owner]
+            ].map(([label, value]) => (
+              <div key={label} className="grid grid-cols-[120px_1fr] gap-3 py-3">
+                <dt className="text-[11px] font-black uppercase tracking-[0.08em] text-[var(--sky-deep)]">{label}</dt>
+                <dd className="font-black text-[var(--navy)]">{value}</dd>
+              </div>
+            ))}
+          </dl>
+
+          <p className="mt-5 text-sm font-bold leading-6 text-[var(--muted)]">
+            Use this enlarged view to check artwork, set details, condition, proof status, and estimated value before sending or accepting a trade.
+          </p>
         </div>
       </div>
-      <span className="shrink-0 rounded-full bg-[var(--sun)] px-2.5 py-1 text-xs font-black text-[var(--navy)]">{card.estimatedValue}</span>
     </div>
+  );
+}
+
+function getProofLabel(card: CollectorCard) {
+  return {
+    unverified: "Unverified",
+    pending: "Proof pending",
+    verified: "Verified owner",
+    wallet_verified: "Wallet verified",
+    disputed: "Disputed"
+  }[card.verificationStatus];
+}
+
+function getProofHref(card: CollectorCard) {
+  return card.proofUrl || `/verification?card=${encodeURIComponent(card.id)}`;
+}
+
+function isExternalProof(card: CollectorCard) {
+  return Boolean(card.proofUrl && /^https?:\/\//i.test(card.proofUrl));
+}
+
+function ProofLink({ card, children, className }: { card: CollectorCard; children: ReactNode; className?: string }) {
+  const external = isExternalProof(card);
+  return (
+    <a
+      href={getProofHref(card)}
+      target={external ? "_blank" : undefined}
+      rel={external ? "noreferrer" : undefined}
+      onClick={(event) => event.stopPropagation()}
+      className={cx("underline decoration-[rgba(23,58,99,0.28)] underline-offset-2 transition hover:text-[var(--navy)]", className)}
+      title="Open proof of authenticity"
+    >
+      {children}
+    </a>
   );
 }

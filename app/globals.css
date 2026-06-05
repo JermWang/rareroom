@@ -19,6 +19,8 @@
   --paper: #eef7fe;
   --paper-2: #e1f0fb;
   --card: #ffffff;
+  --surface: rgba(255, 255, 255, 0.88);
+  --surface-raised: rgba(255, 255, 255, 0.96);
   --ink: var(--navy);
   --muted: #5c7a99;
   --line: rgba(23, 58, 99, 0.16);
@@ -31,6 +33,7 @@
   --font-body: "Nunito", system-ui, sans-serif;
   --shadow-card: 0 18px 40px -22px rgba(23, 58, 99, 0.55), 0 2px 0 rgba(23, 58, 99, 0.04);
   --shadow-pop: 0 26px 60px -26px rgba(23, 58, 99, 0.6);
+  --shadow-refined: 0 20px 52px -34px rgba(15, 41, 73, 0.42), 0 1px 0 rgba(255, 255, 255, 0.82) inset;
   background: var(--paper);
 }
 
@@ -189,6 +192,212 @@ h3 {
   color: var(--ink);
 }
 
+.rr-card-shell,
+.rr-listing-card,
+.rr-trade-card-row {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(23, 58, 99, 0.14);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 252, 255, 0.92)),
+    var(--surface-raised);
+  box-shadow: var(--shadow-refined);
+}
+
+.rr-card-shell,
+.rr-listing-card {
+  border-radius: 20px;
+}
+
+.rr-card-shell::before,
+.rr-listing-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  background: linear-gradient(90deg, var(--sky), var(--mint), var(--sun));
+  opacity: 0.78;
+}
+
+.rr-card-shell {
+  display: block;
+  color: var(--ink);
+  transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
+}
+
+.rr-card-shell:hover {
+  border-color: rgba(23, 58, 99, 0.24);
+  box-shadow: 0 28px 70px -38px rgba(15, 41, 73, 0.52), 0 1px 0 rgba(255, 255, 255, 0.86) inset;
+  transform: translateY(-2px);
+}
+
+.rr-card-media {
+  position: relative;
+  padding: 14px 14px 0;
+}
+
+.rr-card-body {
+  padding: 12px 14px 14px;
+}
+
+.rr-card-meta-line {
+  display: flex;
+  min-height: 30px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-top: 1px solid rgba(23, 58, 99, 0.1);
+  margin-top: 10px;
+  padding-top: 10px;
+}
+
+.rr-card-kicker {
+  color: color-mix(in srgb, var(--navy), transparent 42%);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.rr-card-title {
+  color: var(--navy);
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 1.15;
+}
+
+.rr-card-subtitle {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.25;
+}
+
+.rr-card-value {
+  color: var(--navy-deep);
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.rr-card-status-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 11px;
+}
+
+.rr-card-status-select {
+  min-height: 29px;
+  max-width: 100%;
+  border: 1px solid rgba(23, 58, 99, 0.16);
+  border-radius: 999px;
+  background: #fff;
+  padding: 0 9px;
+  color: var(--navy);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 850;
+  outline: none;
+}
+
+.rr-listing-card {
+  display: flex;
+  min-height: 100%;
+  flex-direction: column;
+  padding: 14px;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
+}
+
+.rr-listing-card:hover {
+  border-color: rgba(23, 58, 99, 0.25);
+  box-shadow: 0 30px 76px -42px rgba(15, 41, 73, 0.58);
+  transform: translateY(-2px);
+}
+
+.rr-proof-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid rgba(23, 58, 99, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  padding: 4px 8px;
+  font-size: 10px;
+  font-weight: 900;
+  box-shadow: 0 12px 28px -22px rgba(23, 58, 99, 0.5);
+}
+
+.rr-listing-facts {
+  display: grid;
+  gap: 8px;
+  border-top: 1px solid rgba(23, 58, 99, 0.1);
+  border-bottom: 1px solid rgba(23, 58, 99, 0.1);
+  margin-top: 12px;
+  padding: 11px 0;
+}
+
+.rr-listing-fact {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.rr-listing-fact strong {
+  min-width: 0;
+  color: var(--navy);
+  font-size: 11px;
+  font-weight: 900;
+  text-align: right;
+}
+
+.rr-trade-card-row {
+  display: grid;
+  grid-template-columns: 62px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  border-radius: 18px;
+  padding: 10px;
+  transition: border-color 0.16s ease, background 0.16s ease, box-shadow 0.16s ease, opacity 0.16s ease;
+}
+
+.rr-trade-card-row-selected {
+  border-color: rgba(23, 58, 99, 0.22);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(245, 251, 255, 0.94));
+}
+
+.rr-trade-card-row-muted {
+  opacity: 0.56;
+}
+
+.rr-trade-card-row:hover {
+  border-color: rgba(23, 58, 99, 0.28);
+  box-shadow: 0 18px 48px -34px rgba(15, 41, 73, 0.54);
+}
+
+.rr-card-action-pill {
+  min-height: 28px;
+  border: 1px solid rgba(23, 58, 99, 0.14);
+  border-radius: 999px;
+  background: #fff;
+  padding: 0 10px;
+  color: var(--navy);
+  font-size: 11px;
+  font-weight: 900;
+  transition: background 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+}
+
+.rr-card-action-pill-active {
+  border-color: var(--navy);
+  background: var(--navy);
+  color: #fff;
+}
+
 .rr-preview-panel {
   isolation: isolate;
 }
@@ -342,15 +551,15 @@ h3 {
 
 .swap-column,
 .swap-command {
-  border: 1px solid rgba(23, 58, 99, 0.14);
-  border-radius: 28px;
-  background: rgba(255, 255, 255, 0.46);
-  box-shadow: 0 24px 70px -46px rgba(23, 58, 99, 0.66);
+  border: 1px solid rgba(23, 58, 99, 0.12);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.76);
+  box-shadow: 0 24px 70px -48px rgba(15, 41, 73, 0.56), inset 0 1px 0 rgba(255, 255, 255, 0.68);
   padding: 18px;
 }
 
 .swap-command {
-  background: rgba(255, 255, 255, 0.58);
+  background: rgba(255, 255, 255, 0.86);
 }
 
 .chat-panel {

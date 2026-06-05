@@ -324,7 +324,15 @@ export function CardArt({ card, large = false }: { card: CollectorCard; large?: 
   }
 
   return (
-    <div onMouseMove={moveHolo} className={cx("holo relative aspect-[5/7] overflow-hidden rounded-[14px] border-2 border-[var(--navy)] bg-[var(--sky-soft)] ring-1 ring-inset", palette.ring, palette.glow, large && "rounded-[22px]")}>
+    <div
+      onMouseMove={moveHolo}
+      className={cx(
+        "holo relative aspect-[5/7] overflow-hidden rounded-[13px] border border-[rgba(23,58,99,0.16)] bg-white ring-1 ring-inset shadow-[0_18px_42px_-30px_rgba(15,41,73,0.62)]",
+        palette.ring,
+        palette.glow,
+        large && "rounded-[20px]"
+      )}
+    >
       <img
         src={card.imageUrl}
         alt={`${card.name} — ${card.setName} ${card.cardNumber}`}
@@ -344,14 +352,14 @@ export function CardArt({ card, large = false }: { card: CollectorCard; large?: 
 export function StatusBadge({ status }: { status: CollectorCard["status"] }) {
   const Icon = statusIcons[status];
   const tone = {
-    owned: "border-[var(--navy)] bg-[var(--sky-soft)] text-[var(--sky-deep)]",
-    for_trade: "border-[var(--navy)] bg-[var(--sun)] text-[var(--navy)]",
-    wishlist: "border-[var(--navy)] bg-[#ffe2e2] text-[var(--red)]",
-    locked: "border-[var(--navy)] bg-white text-[var(--muted)]"
+    owned: "border-[rgba(23,58,99,0.14)] bg-[var(--sky-soft)] text-[var(--sky-deep)]",
+    for_trade: "border-[rgba(23,58,99,0.18)] bg-[#fff4c9] text-[var(--navy)]",
+    wishlist: "border-[rgba(238,77,77,0.2)] bg-[#ffeaea] text-[var(--red)]",
+    locked: "border-[rgba(23,58,99,0.14)] bg-white text-[var(--muted)]"
   }[status];
 
   return (
-    <span className={cx("inline-flex items-center gap-1 rounded-full border-2 px-2 py-1 text-[11px] font-black", tone)}>
+    <span className={cx("inline-flex min-h-[29px] items-center gap-1 rounded-full border px-2 py-1 text-[11px] font-black", tone)}>
       <Icon size={12} />
       {statusCopy[status]}
     </span>
@@ -360,54 +368,59 @@ export function StatusBadge({ status }: { status: CollectorCard["status"] }) {
 
 export function VerificationBadge({ status }: { status: CollectorCard["verificationStatus"] }) {
   const tone = {
-    unverified: "border-[var(--navy)] bg-white text-[var(--muted)]",
-    pending: "border-[var(--navy)] bg-[#fff2cf] text-[var(--sun-deep)]",
-    verified: "border-[var(--navy)] bg-[#d7f7ee] text-[var(--mint)]",
-    wallet_verified: "border-[var(--navy)] bg-[#ece3ff] text-[#7c3aed]",
-    disputed: "border-[var(--navy)] bg-[#ffe2e2] text-[var(--red)]"
+    unverified: "border-[rgba(23,58,99,0.14)] bg-white text-[var(--muted)]",
+    pending: "border-[rgba(247,161,43,0.22)] bg-[#fff2cf] text-[var(--sun-deep)]",
+    verified: "border-[rgba(25,195,154,0.24)] bg-[#d7f7ee] text-[var(--mint)]",
+    wallet_verified: "border-[rgba(124,58,237,0.2)] bg-[#ece3ff] text-[#7c3aed]",
+    disputed: "border-[rgba(238,77,77,0.22)] bg-[#ffe2e2] text-[var(--red)]"
   }[status];
-  return <span className={cx("rounded-full border-2 px-2 py-1 text-[11px] font-black", tone)}>{verificationCopy[status]}</span>;
+  return <span className={cx("inline-flex min-h-[29px] items-center rounded-full border px-2 py-1 text-[11px] font-black", tone)}>{verificationCopy[status]}</span>;
 }
 
 export function CardTile({ card, compact = false, onStatusChange }: { card: CollectorCard; compact?: boolean; onStatusChange?: (status: CollectorCard["status"]) => void }) {
-  const className = "group block rounded-[22px] border-2 border-[var(--navy)] bg-white p-3 shadow-card transition hover:-translate-y-1 hover:shadow-pop";
+  const className = "rr-card-shell group";
   const inner = (
     <>
-      <div className="relative">
+      <div className="rr-card-media">
         <CardArt card={card} />
         {card.imported ? (
-          <span className="absolute left-2 top-2 rounded-full border-2 border-[var(--navy)] bg-[var(--sun)] px-2 py-0.5 text-[9px] font-black uppercase tracking-wide text-[var(--navy)]">
+          <span className="absolute left-5 top-5 rounded-full border border-[rgba(23,58,99,0.18)] bg-white/90 px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.08em] text-[var(--navy)] shadow-sm">
             Imported
           </span>
         ) : null}
       </div>
-      <div className="mt-3 flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <h3 className="truncate text-sm font-black text-[var(--navy)]">{card.name}</h3>
-          <p className="mt-1 truncate text-xs font-bold text-[var(--muted)]">{card.setName}</p>
+      <div className="rr-card-body">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <div className="rr-card-kicker truncate">{card.rarity}</div>
+            <h3 className="rr-card-title mt-1 truncate">{card.name}</h3>
+            <p className="rr-card-subtitle mt-1 truncate">
+              {card.setName} / {card.cardNumber}
+            </p>
+          </div>
+          <span className="rr-card-value shrink-0">{card.estimatedValue}</span>
         </div>
-        <span className="shrink-0 text-xs font-black text-[var(--sun-deep)]">{card.estimatedValue}</span>
+        {!compact ? (
+          <div className="rr-card-meta-line">
+            {onStatusChange ? (
+              <select
+                value={card.status}
+                onChange={(e) => onStatusChange(e.target.value as CollectorCard["status"])}
+                onClick={(e) => e.stopPropagation()}
+                className="rr-card-status-select"
+              >
+                <option value="owned">Owned</option>
+                <option value="for_trade">For Trade</option>
+                <option value="wishlist">Wishlist</option>
+                <option value="locked">Locked</option>
+              </select>
+            ) : (
+              <StatusBadge status={card.status} />
+            )}
+            <VerificationBadge status={card.verificationStatus} />
+          </div>
+        ) : null}
       </div>
-      {!compact ? (
-        <div className="mt-3 flex flex-wrap gap-2">
-          {onStatusChange ? (
-            <select
-              value={card.status}
-              onChange={(e) => onStatusChange(e.target.value as CollectorCard["status"])}
-              onClick={(e) => e.stopPropagation()}
-              className="rounded-full border-2 border-[var(--navy)] bg-[var(--sky-soft)] px-2 py-1 text-[11px] font-black text-[var(--navy)] outline-none cursor-pointer"
-            >
-              <option value="owned">Owned</option>
-              <option value="for_trade">For Trade</option>
-              <option value="wishlist">Wishlist</option>
-              <option value="locked">Locked</option>
-            </select>
-          ) : (
-            <StatusBadge status={card.status} />
-          )}
-          <VerificationBadge status={card.verificationStatus} />
-        </div>
-      ) : null}
     </>
   );
 

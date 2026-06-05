@@ -4,7 +4,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { ArrowUpDown, BadgeCheck, Gem, Handshake, HeartHandshake, MessageSquare, Shield, Zap } from "lucide-react";
+import { ArrowUpDown, BadgeCheck, Gem, Handshake, MessageSquare, Shield, Zap } from "lucide-react";
 import { Button, CardArt, CollectorRow, PageShell, SearchBar, SectionHeader, cx } from "@/components/ui";
 import { CollectorCard } from "@/lib/data";
 import { fetchMarketplaceListings } from "@/lib/binder-db";
@@ -237,47 +237,50 @@ function ListingCard({ card }: { card: CollectorCard }) {
   const externalProof = /^https?:\/\//i.test(proofHref);
 
   return (
-    <div className="rr-panel flex flex-col p-3 transition hover:-translate-y-0.5 hover:shadow-[0_26px_60px_-26px_rgba(23,58,99,0.45)]">
+    <div className="rr-listing-card">
       <div className="relative">
         <CardArt card={card} />
         <a
           href={proofHref}
           target={externalProof ? "_blank" : undefined}
           rel={externalProof ? "noreferrer" : undefined}
-          className={cx(
-            "absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-full border border-[var(--navy)] bg-white px-2 py-0.5 text-[9px] font-black shadow-sm transition hover:bg-[var(--sky-soft)]",
-            src.color
-          )}
+          className={cx("rr-proof-chip absolute bottom-2 left-2 transition hover:bg-[var(--sky-soft)]", src.color)}
           title="Open proof of authenticity"
         >
-          <SrcIcon size={9} />
+          <SrcIcon size={11} />
           {src.label}
         </a>
       </div>
 
-      <div className="mt-2.5 flex items-start justify-between gap-1">
+      <div className="mt-3 flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <h3 className="truncate text-sm font-black text-[var(--navy)]">{card.name}</h3>
-          <p className="truncate text-xs font-bold text-[var(--muted)]">{card.setName}</p>
+          <div className="rr-card-kicker truncate">{card.rarity}</div>
+          <h3 className="rr-card-title mt-1 truncate">{card.name}</h3>
+          <p className="rr-card-subtitle mt-1 truncate">
+            {card.setName} / {card.cardNumber}
+          </p>
         </div>
-        <span className="shrink-0 text-xs font-black text-[var(--sun-deep)]">{card.estimatedValue}</span>
+        <span className="rr-card-value shrink-0">{card.estimatedValue}</span>
       </div>
 
-      <div className="mt-2.5 flex items-center justify-between gap-2 border-y border-[rgba(23,58,99,0.12)] py-2">
-        <CollectorRow name={card.owner} compact />
-        <span className="shrink-0 text-[9px] font-black uppercase tracking-[0.05em] text-[var(--muted)]">{platform}</span>
+      <div className="rr-listing-facts">
+        <div className="rr-listing-fact">
+          <span>Collector</span>
+          <div className="min-w-0">
+            <CollectorRow name={card.owner} compact />
+          </div>
+        </div>
+        <div className="rr-listing-fact">
+          <span>Source</span>
+          <strong className="truncate">{platform}</strong>
+        </div>
+        <div className="rr-listing-fact">
+          <span>Condition</span>
+          <strong className="truncate">{card.condition}</strong>
+        </div>
       </div>
 
-      <div className="mt-2 flex items-start gap-1.5 text-xs text-[var(--muted)]">
-        <HeartHandshake size={13} className="mt-0.5 shrink-0 text-[var(--red)]" />
-        <span className="line-clamp-1">Wants: wishlist matches, electric rares</span>
-      </div>
-      <div className="mt-1 flex items-start gap-1.5 text-xs text-[var(--muted)]">
-        <Handshake size={13} className="mt-0.5 shrink-0 text-[var(--sun-deep)]" />
-        <span className="line-clamp-1">Open to offers - Bundle trade</span>
-      </div>
-
-      <Button href={`/marketplace?tab=build&card=${card.id}`} className="mt-3 h-9 w-full text-xs">
+      <Button href={`/marketplace?tab=build&card=${card.id}`} className="mt-3 h-10 w-full text-xs">
         Build offer
       </Button>
     </div>

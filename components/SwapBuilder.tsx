@@ -260,37 +260,38 @@ function TradeCardRow({
   return (
     <div
       className={cx(
-        "group grid grid-cols-[58px_1fr_auto] items-center gap-3 rounded-[18px] border bg-white/58 p-2.5 transition hover:bg-white/82",
-        selected ? "border-[rgba(23,58,99,0.18)] shadow-[0_12px_28px_-24px_rgba(23,58,99,0.55)]" : "border-[rgba(23,58,99,0.08)] opacity-55"
+        "rr-trade-card-row group",
+        selected ? "rr-trade-card-row-selected" : "rr-trade-card-row-muted"
       )}
     >
       <button
         type="button"
         onClick={onPreview}
-        className="relative w-[58px] rounded-[14px] text-left outline-none transition focus-visible:ring-2 focus-visible:ring-[var(--sky)]"
+        className="relative w-[62px] rounded-[14px] text-left outline-none transition focus-visible:ring-2 focus-visible:ring-[var(--sky)]"
         aria-label={`Enlarge ${card.name}`}
       >
         <CardArt card={card} />
-        <span className="absolute inset-x-1 bottom-1 grid h-6 place-items-center rounded-full border border-[rgba(23,58,99,0.22)] bg-white/86 text-[var(--navy)] opacity-0 shadow-sm transition group-hover:opacity-100 group-focus-visible:opacity-100">
+        <span className="absolute inset-x-1 bottom-1 grid h-6 place-items-center rounded-full border border-[rgba(23,58,99,0.16)] bg-white/88 text-[var(--navy)] opacity-0 shadow-sm transition group-hover:opacity-100 group-focus-visible:opacity-100">
           <Maximize2 size={12} />
         </span>
       </button>
       <div className="min-w-0">
-        <h3 className="truncate text-sm font-black text-[var(--navy)]">{card.name}</h3>
-        <p className="mt-0.5 truncate text-xs font-bold text-[var(--muted)]">{card.setName}</p>
-        <p className="mt-2 truncate text-[11px] font-black uppercase tracking-[0.06em] text-[var(--sky-deep)]">
+        <div className="rr-card-kicker truncate">{card.rarity}</div>
+        <h3 className="rr-card-title mt-1 truncate">{card.name}</h3>
+        <p className="rr-card-subtitle mt-0.5 truncate">{card.setName}</p>
+        <p className="mt-2 truncate text-[10px] font-black uppercase tracking-[0.06em] text-[var(--sky-deep)]">
           <ProofLink card={card}>{proofLabel}</ProofLink> <span className="text-[rgba(23,58,99,0.28)]">/</span> {card.condition}
         </p>
       </div>
       <div className="grid justify-items-end gap-2">
-        <span className="shrink-0 text-right text-sm font-black text-[var(--sun-deep)]">{card.estimatedValue}</span>
+        <span className="rr-card-value text-right">{card.estimatedValue}</span>
         {onSelect ? (
           <button
             type="button"
             onClick={onSelect}
             className={cx(
-              "rounded-full px-2.5 py-1 text-[11px] font-black transition",
-              selected ? "bg-[var(--navy)] text-white" : "bg-white/72 text-[var(--navy)]"
+              "rr-card-action-pill",
+              selected && "rr-card-action-pill-active"
             )}
           >
             {selected ? "Selected" : "Add"}
@@ -299,7 +300,7 @@ function TradeCardRow({
           <button
             type="button"
             onClick={onPreview}
-            className="rounded-full bg-white/72 px-2.5 py-1 text-[11px] font-black text-[var(--navy)] transition hover:bg-white"
+            className="rr-card-action-pill"
           >
             View
           </button>

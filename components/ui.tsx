@@ -352,15 +352,15 @@ export function CardArt({ card, large = false }: { card: CollectorCard; large?: 
 export function StatusBadge({ status }: { status: CollectorCard["status"] }) {
   const Icon = statusIcons[status];
   const tone = {
-    owned: "border-[rgba(23,58,99,0.14)] bg-[var(--sky-soft)] text-[var(--sky-deep)]",
-    for_trade: "border-[rgba(23,58,99,0.18)] bg-[#fff4c9] text-[var(--navy)]",
-    wishlist: "border-[rgba(238,77,77,0.2)] bg-[#ffeaea] text-[var(--red)]",
-    locked: "border-[rgba(23,58,99,0.14)] bg-white text-[var(--muted)]"
+    owned: "text-[var(--sky-deep)]",
+    for_trade: "text-[var(--navy)]",
+    wishlist: "text-[var(--red)]",
+    locked: "text-[var(--muted)]"
   }[status];
 
   return (
-    <span className={cx("inline-flex min-h-[29px] items-center gap-1 rounded-full border px-2 py-1 text-[11px] font-black", tone)}>
-      <Icon size={12} />
+    <span className={cx("inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.08em]", tone)}>
+      <Icon size={11} strokeWidth={2.2} />
       {statusCopy[status]}
     </span>
   );
@@ -368,13 +368,18 @@ export function StatusBadge({ status }: { status: CollectorCard["status"] }) {
 
 export function VerificationBadge({ status }: { status: CollectorCard["verificationStatus"] }) {
   const tone = {
-    unverified: "border-[rgba(23,58,99,0.14)] bg-white text-[var(--muted)]",
-    pending: "border-[rgba(247,161,43,0.22)] bg-[#fff2cf] text-[var(--sun-deep)]",
-    verified: "border-[rgba(25,195,154,0.24)] bg-[#d7f7ee] text-[var(--mint)]",
-    wallet_verified: "border-[rgba(124,58,237,0.2)] bg-[#ece3ff] text-[#7c3aed]",
-    disputed: "border-[rgba(238,77,77,0.22)] bg-[#ffe2e2] text-[var(--red)]"
+    unverified: { text: "text-[var(--muted)]", dot: "bg-[var(--muted)]" },
+    pending: { text: "text-[var(--sun-deep)]", dot: "bg-[var(--sun-deep)]" },
+    verified: { text: "text-[var(--mint)]", dot: "bg-[var(--mint)]" },
+    wallet_verified: { text: "text-[#7c3aed]", dot: "bg-[#7c3aed]" },
+    disputed: { text: "text-[var(--red)]", dot: "bg-[var(--red)]" }
   }[status];
-  return <span className={cx("inline-flex min-h-[29px] items-center rounded-full border px-2 py-1 text-[11px] font-black", tone)}>{verificationCopy[status]}</span>;
+  return (
+    <span className={cx("inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.08em]", tone.text)}>
+      <span className={cx("size-1.5 rounded-full", tone.dot)} />
+      {verificationCopy[status]}
+    </span>
+  );
 }
 
 export function CardTile({ card, compact = false, onStatusChange }: { card: CollectorCard; compact?: boolean; onStatusChange?: (status: CollectorCard["status"]) => void }) {

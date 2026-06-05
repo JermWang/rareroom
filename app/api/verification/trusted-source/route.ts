@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { sanitizeProofUrl } from "@/lib/proof-url";
 import { TrustedProviderId, trustedVerificationProviders } from "@/lib/trusted-verification";
 
 type TrustedSourceBody = {
@@ -16,7 +17,9 @@ const providerConnectionRequired: TrustedProviderId[] = [
   "pricecharting",
   "collectr_partner",
   "ptcg_live_partner",
-  "tcg_pocket_partner"
+  "tcg_pocket_partner",
+  "wallet_signature",
+  "onchain_receipt"
 ];
 
 export async function POST(req: NextRequest) {
@@ -29,7 +32,13 @@ export async function POST(req: NextRequest) {
 
   const provider = body.provider;
   const providerConfig = provider ? trustedVerificationProviders[provider] : null;
-  if (!body.userCardId || !provider || !providerConfig || !body.externalReference) {
+  const externalReference = typeof body.externalReference === "string" ? body.externalReference.trim().slice(0, 500) : "";
+  const proofUrl = sanitizeProofUrl(body.proofUrl);
+  if (body.proofUrl && !proofUrl) {
+    return NextResponse.json({ error: "Proof URL must be an internal path or HTTPS URL." }, { status: 400 });
+  }
+
+  if (!body.userCardId || !provider || !providerConfig || !externalReference) {
     return NextResponse.json({ error: "Missing card, provider, or external reference." }, { status: 400 });
   }
 
@@ -90,10 +99,10 @@ export async function POST(req: NextRequest) {
     .insert({
       user_card_id: body.userCardId,
       type: providerConfig.proofType,
-      proof_url: body.proofUrl ?? null,
+      proof_url: proofUrl,
       status,
       source_provider: provider,
-      external_reference: body.externalReference,
+      external_reference: externalReference,
       verification_payload: body.payload ?? {},
       confidence_score: 100,
       is_trade_grade: true,

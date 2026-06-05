@@ -17,10 +17,13 @@ export default function AuthPage() {
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState("Sign in with Discord, or use an email magic link.");
+  const [nextPath, setNextPath] = useState("/binder");
 
   // Surface OAuth errors handed back by /auth/callback (?error=...).
   useEffect(() => {
     const error = new URLSearchParams(window.location.search).get("error");
+    const requestedNext = new URLSearchParams(window.location.search).get("next");
+    if (requestedNext?.startsWith("/") && !requestedNext.startsWith("//")) setNextPath(requestedNext);
     if (error) setStatus(`Sign-in failed: ${error}`);
   }, []);
 
@@ -32,7 +35,7 @@ export default function AuthPage() {
     setBusy(true);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "discord",
-      options: { redirectTo: `${window.location.origin}/auth/callback?next=/binder` }
+      options: { redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}` }
     });
     if (error) {
       setBusy(false);
@@ -53,7 +56,7 @@ export default function AuthPage() {
     setBusy(true);
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: `${window.location.origin}/auth/callback?next=/binder` }
+      options: { emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}` }
     });
     setBusy(false);
     setStatus(error ? error.message : "Magic link sent. Check your inbox.");

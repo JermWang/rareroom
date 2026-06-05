@@ -9,6 +9,7 @@ export type SignedLink = {
   chain: WalletChain;
   signature: string; // EVM: 0x-hex (personal_sign). Solana: base64 of the raw signature bytes.
   message: string;
+  challengeId: string;
 };
 
 type Eip1193Provider = {
@@ -26,23 +27,24 @@ type WalletWindow = Window & {
   solana?: PhantomProvider;
 };
 
-// The exact message the user signs. Server re-derives and verifies the binding.
-function buildMessage(userId: string, address: string): string {
-  return [
-    "RareRoom wallet verification",
-    `Account: ${userId}`,
-    `Address: ${address}`,
-    `Issued: ${new Date().toISOString()}`
-  ].join("\n");
-}
-
 function bytesToBase64(bytes: Uint8Array): string {
   let binary = "";
   for (let i = 0; i < bytes.length; i += 1) binary += String.fromCharCode(bytes[i]);
   return btoa(binary);
 }
 
-export async function connectEvmWallet(userId: string): Promise<SignedLink> {
+async function createChallenge(address: string, chain: WalletChain): Promise<{ challengeId: string; address: string; message: string }> {
+  const res = await fetch("/api/wallet/challenge", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ address, chain })
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.error || "Could not create wallet challenge.");
+  return json;
+}
+
+export async function connectEvmWallet(): Promise<SignedLink> {
   const provider = (window as WalletWindow).ethereum;
   if (!provider) {
     throw new Error("No EVM wallet detected. Install MetaMask or a compatible wallet.");
@@ -50,25 +52,25 @@ export async function connectEvmWallet(userId: string): Promise<SignedLink> {
   const accounts = (await provider.request({ method: "eth_requestAccounts" })) as string[];
   const address = accounts?.[0];
   if (!address) throw new Error("No account was returned by the wallet.");
-  const message = buildMessage(userId, address);
+  const challenge = await createChallenge(address, "evm");
   const signature = (await provider.request({
     method: "personal_sign",
-    params: [message, address]
+    params: [challenge.message, challenge.address]
   })) as string;
-  return { address, chain: "evm", signature, message };
+  return { address: challenge.address, chain: "evm", signature, message: challenge.message, challengeId: challenge.challengeId };
 }
 
-export async function connectSolanaWallet(userId: string): Promise<SignedLink> {
+export async function connectSolanaWallet(): Promise<SignedLink> {
   const provider = (window as WalletWindow).solana;
   if (!provider || !provider.isPhantom) {
     throw new Error("Phantom wallet not detected. Install the Phantom extension.");
   }
   const { publicKey } = await provider.connect();
   const address = publicKey.toString();
-  const message = buildMessage(userId, address);
-  const encoded = new TextEncoder().encode(message);
+  const challenge = await createChallenge(address, "solana");
+  const encoded = new TextEncoder().encode(challenge.message);
   const { signature } = await provider.signMessage(encoded, "utf8");
-  return { address, chain: "solana", signature: bytesToBase64(signature), message };
+  return { address: challenge.address, chain: "solana", signature: bytesToBase64(signature), message: challenge.message, challengeId: challenge.challengeId };
 }
 
 export function shortenAddress(address: string): string {

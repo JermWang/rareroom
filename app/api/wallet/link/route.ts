@@ -2,26 +2,39 @@ import { NextRequest, NextResponse } from "next/server";
 import { verifyMessage } from "ethers";
 import nacl from "tweetnacl";
 import bs58 from "bs58";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { normalizeWalletAddress } from "@/lib/wallet-challenge";
 
-// Links a wallet to the signed-in user after verifying a signed challenge.
-// The message binds the wallet to the user's id + a timestamp, so a signature
-// can't be replayed against a different account or reused after it expires.
+type LinkBody = {
+  address?: string;
+  chain?: "evm" | "solana";
+  signature?: string;
+  message?: string;
+  challengeId?: string;
+};
+
 export async function POST(req: NextRequest) {
-  let body: { address?: string; chain?: string; signature?: string; message?: string };
+  let body: LinkBody;
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
   }
 
-  const { address, chain, signature, message } = body;
-  if (!address || !chain || !signature || !message || (chain !== "evm" && chain !== "solana")) {
+  const { address, chain, signature, message, challengeId } = body;
+  if (!address || !chain || !signature || !message || !challengeId || (chain !== "evm" && chain !== "solana")) {
     return NextResponse.json({ error: "Missing or invalid fields." }, { status: 400 });
   }
 
+  const normalizedAddress = normalizeWalletAddress(address, chain);
+  if (!normalizedAddress) {
+    return NextResponse.json({ error: "Invalid wallet address." }, { status: 400 });
+  }
+
   const supabase = await createSupabaseServerClient();
-  if (!supabase) {
+  const admin = createSupabaseAdminClient();
+  if (!supabase || !admin) {
     return NextResponse.json({ error: "Auth is not configured." }, { status: 500 });
   }
 
@@ -32,30 +45,37 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Sign in before linking a wallet." }, { status: 401 });
   }
 
-  // The signed message must bind to this exact user and address.
-  if (!message.includes(`Account: ${user.id}`) || !message.includes(`Address: ${address}`)) {
-    return NextResponse.json({ error: "Message does not match your session." }, { status: 400 });
+  const { data: challenge, error: challengeError } = await admin
+    .from("wallet_link_challenges")
+    .select("id,user_id,wallet_address,wallet_chain,message,expires_at,used_at")
+    .eq("id", challengeId)
+    .single();
+
+  if (
+    challengeError ||
+    !challenge ||
+    challenge.user_id !== user.id ||
+    challenge.wallet_address !== normalizedAddress ||
+    challenge.wallet_chain !== chain ||
+    challenge.message !== message
+  ) {
+    return NextResponse.json({ error: "Challenge does not match your session." }, { status: 400 });
   }
 
-  // And must be recent (5 minute window).
-  const issuedMatch = message.match(/Issued: (.+)$/m);
-  const issuedAt = issuedMatch ? Date.parse(issuedMatch[1]) : NaN;
-  if (Number.isNaN(issuedAt) || Date.now() - issuedAt > 5 * 60 * 1000) {
-    return NextResponse.json({ error: "Signature expired — please try again." }, { status: 400 });
+  if (challenge.used_at || Date.parse(challenge.expires_at) <= Date.now()) {
+    return NextResponse.json({ error: "Signature challenge expired. Please try again." }, { status: 400 });
   }
 
   let verified = false;
-  let normalizedAddress = address;
   try {
     if (chain === "evm") {
       const recovered = verifyMessage(message, signature);
-      verified = recovered.toLowerCase() === address.toLowerCase();
-      normalizedAddress = recovered;
+      verified = recovered.toLowerCase() === normalizedAddress.toLowerCase();
     } else {
       verified = nacl.sign.detached.verify(
         new TextEncoder().encode(message),
         Buffer.from(signature, "base64"),
-        bs58.decode(address)
+        bs58.decode(normalizedAddress)
       );
     }
   } catch {
@@ -66,8 +86,19 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Signature could not be verified." }, { status: 400 });
   }
 
-  // RLS allows a user to update only their own row (auth.uid() = id).
-  const { error } = await supabase
+  const { data: consumed, error: consumeError } = await admin
+    .from("wallet_link_challenges")
+    .update({ used_at: new Date().toISOString() })
+    .eq("id", challengeId)
+    .is("used_at", null)
+    .select("id")
+    .single();
+
+  if (consumeError || !consumed) {
+    return NextResponse.json({ error: "Signature challenge was already used." }, { status: 400 });
+  }
+
+  const { error } = await admin
     .from("users")
     .update({ wallet_address: normalizedAddress, wallet_chain: chain })
     .eq("id", user.id);

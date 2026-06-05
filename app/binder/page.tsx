@@ -36,9 +36,11 @@ export default function BinderPage() {
   const allCards = useMemo(() => (usingSupabase ? imported : [...imported, ...cards]), [imported, usingSupabase]);
 
   async function handleStatusChange(cardId: string, status: CardStatus) {
+    const previous = imported;
     setImported((prev) => prev.map((c) => (c.id === cardId ? { ...c, status } : c)));
     if (usingSupabase) {
-      await updateUserCardStatus(cardId, status);
+      const ok = await updateUserCardStatus(cardId, status);
+      if (!ok) setImported(previous);
     }
   }
 

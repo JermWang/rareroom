@@ -28,13 +28,10 @@ export function WalletLink() {
       if (!active) return;
       if (user) {
         setUserId(user.id);
-        const { data } = await supabase
-          .from("users")
-          .select("wallet_address, wallet_chain")
-          .eq("id", user.id)
-          .single();
-        if (active && data?.wallet_address) {
-          setLinked({ address: data.wallet_address, chain: (data.wallet_chain as WalletChain) ?? "evm" });
+        const res = await fetch("/api/wallet/status");
+        const data = await res.json();
+        if (active && data?.linked && data.address) {
+          setLinked({ address: data.address, chain: (data.chain as WalletChain) ?? "evm" });
         }
       }
       setChecking(false);
@@ -50,7 +47,7 @@ export function WalletLink() {
     setError(null);
     setBusy(chain);
     try {
-      const signed = chain === "solana" ? await connectSolanaWallet(userId) : await connectEvmWallet(userId);
+      const signed = chain === "solana" ? await connectSolanaWallet() : await connectEvmWallet();
       const res = await fetch("/api/wallet/link", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

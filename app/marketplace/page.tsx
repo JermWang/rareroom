@@ -6,9 +6,9 @@ import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ArrowUpDown, BadgeCheck, Gem, Handshake, HeartHandshake, MessageSquare, Shield, Zap } from "lucide-react";
 import { Button, CardArt, CollectorRow, PageShell, SearchBar, SectionHeader, cx } from "@/components/ui";
-import { cards, CollectorCard } from "@/lib/data";
+import { CollectorCard } from "@/lib/data";
 import { fetchMarketplaceListings } from "@/lib/binder-db";
-import { isTradeGradeVerification } from "@/lib/trusted-verification";
+import { sanitizeProofUrl } from "@/lib/proof-url";
 
 type HubTab = "browse" | "build" | "requests";
 
@@ -64,7 +64,7 @@ function SwapHubPage() {
         setListings(live);
         setUsingLive(true);
       } else {
-        setListings(cards.filter((c) => c.status === "for_trade" && isTradeGradeVerification(c.verificationStatus)));
+        setListings([]);
         setUsingLive(false);
       }
       setLoading(false);
@@ -137,7 +137,7 @@ function BrowseTab({ listings, loading, usingLive }: { listings: CollectorCard[]
         <p className="mb-3 text-sm font-extrabold text-[var(--muted)]">
           {usingLive
             ? `${listings.length} live listing${listings.length !== 1 ? "s" : ""} from verified collectors.`
-            : "Browse source-verified for-trade cards. Screenshot-only and manual-entry cards are blocked from trading."}
+            : "No live listings are available from the database right now."}
         </p>
         <div className="grid gap-3 md:grid-cols-[1fr_auto_auto]">
           <SearchBar placeholder="Search available trades" />
@@ -233,7 +233,7 @@ function ListingCard({ card }: { card: CollectorCard }) {
   const src = verificationSource[card.verificationStatus] ?? verificationSource.unverified;
   const SrcIcon = src.icon;
   const platform = importSource[card.owner] ?? "Imported";
-  const proofHref = card.proofUrl || `/verification?card=${encodeURIComponent(card.id)}`;
+  const proofHref = sanitizeProofUrl(card.proofUrl) || `/verification?card=${encodeURIComponent(card.id)}`;
   const externalProof = /^https?:\/\//i.test(proofHref);
 
   return (

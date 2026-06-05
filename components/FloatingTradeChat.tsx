@@ -4,14 +4,13 @@ import { ReactNode, useEffect, useRef, useState } from "react";
 import { Camera, CheckCircle2, MessageSquare, Mic, Minus, Paperclip, Send, ShieldCheck, Undo2, X } from "lucide-react";
 
 type TradeMessage = {
-  sender: "System" | "MiraMint" | "You";
+  id?: string;
+  sender: "System" | "Collector" | "You";
   body: string;
 };
 
 const initialMessages: TradeMessage[] = [
-  { sender: "System", body: "Trade draft created. Keep negotiation on-platform for protection." },
-  { sender: "MiraMint", body: "I can do Blastoise if the Charizard VMAX stays in the offer." },
-  { sender: "You", body: "That works. I added a note for condition details. Source validation still has to pass." }
+  { sender: "System", body: "Open or send a real trade to start a protected on-platform thread." }
 ];
 
 function cx(...parts: Array<string | false | null | undefined>) {
@@ -22,6 +21,7 @@ export function FloatingTradeChat() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState(initialMessages);
   const [body, setBody] = useState("");
+  const [activeTradeId, setActiveTradeId] = useState<string | null>(null);
   const [micStream, setMicStream] = useState<MediaStream | null>(null);
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
   const [mediaStatus, setMediaStatus] = useState("Condition photos, voice notes, and trade updates stay in this thread.");
@@ -30,7 +30,11 @@ export function FloatingTradeChat() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
-    const openChat = () => setOpen(true);
+    const openChat = (event: Event) => {
+      const detail = (event as CustomEvent<{ tradeId?: string }>).detail;
+      if (detail?.tradeId) setActiveTradeId(detail.tradeId);
+      setOpen(true);
+    };
     window.addEventListener("rareroom:open-trade-chat", openChat);
 
     const params = new URLSearchParams(window.location.search);
@@ -40,6 +44,27 @@ export function FloatingTradeChat() {
 
     return () => window.removeEventListener("rareroom:open-trade-chat", openChat);
   }, []);
+
+  useEffect(() => {
+    if (!activeTradeId) return;
+    let cancelled = false;
+    async function loadMessages() {
+      try {
+        const res = await fetch(`/api/messages?tradeId=${encodeURIComponent(activeTradeId as string)}`);
+        const json = await res.json();
+        if (!cancelled && res.ok) {
+          setMessages(json.messages.length > 0 ? json.messages : [{ sender: "System", body: "Trade thread created. Keep negotiation on-platform for protection." }]);
+          setMediaStatus("Messages in this thread are saved to the trade record.");
+        }
+      } catch {
+        if (!cancelled) setMediaStatus("Could not load saved messages for this trade.");
+      }
+    }
+    loadMessages();
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTradeId]);
 
   useEffect(() => {
     cameraStreamRef.current = cameraStream;
@@ -59,10 +84,27 @@ export function FloatingTradeChat() {
     };
   }, []);
 
-  function sendMessage() {
+  async function sendMessage() {
     if (!body.trim()) return;
-    setMessages((current) => current.concat({ sender: "You", body: body.trim() }));
+    const text = body.trim();
     setBody("");
+    if (!activeTradeId) {
+      setMessages((current) => current.concat({ sender: "You", body: text }));
+      setMediaStatus("This draft message is local because no real trade thread is open.");
+      return;
+    }
+    try {
+      const res = await fetch("/api/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tradeId: activeTradeId, body: text })
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Could not save message.");
+      setMessages((current) => current.concat(json.message));
+    } catch (error) {
+      setMessages((current) => current.concat({ sender: "System", body: error instanceof Error ? error.message : "Could not save message." }));
+    }
   }
 
   async function toggleMic() {
@@ -122,8 +164,10 @@ export function FloatingTradeChat() {
           <div className="flex items-center gap-2">
             <span className="grid size-9 place-items-center rounded-full border-2 border-[var(--navy)] bg-[var(--sun)] text-xs font-black text-[var(--navy)]">MM</span>
             <div className="min-w-0">
-              <h2 className="truncate font-display text-xl font-black leading-none text-[var(--navy)]">MiraMint</h2>
-              <p className="mt-1 truncate text-[10px] font-black uppercase tracking-[0.09em] text-[var(--muted)]">Charizard VMAX for Blastoise</p>
+              <h2 className="truncate font-display text-xl font-black leading-none text-[var(--navy)]">Trade chat</h2>
+              <p className="mt-1 truncate text-[10px] font-black uppercase tracking-[0.09em] text-[var(--muted)]">
+                {activeTradeId ? "Saved trade thread" : "No active trade"}
+              </p>
             </div>
           </div>
           <div className="mt-2 flex flex-wrap gap-1.5">

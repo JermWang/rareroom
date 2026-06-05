@@ -1,7 +1,6 @@
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { CardStatus, CardType, CollectorCard, VerificationStatus } from "@/lib/data";
 import { StoredCard } from "@/lib/import";
-import { isTradeGradeVerification } from "@/lib/trusted-verification";
 
 type UserCardRow = {
   id: string;
@@ -103,71 +102,16 @@ export async function saveStoredCardsToSupabase(cards: StoredCard[]) {
     return { saved: false, count: 0, reason: "Sign in to save cards to your online binder." };
   }
 
-  let count = 0;
-
-  for (const card of cards) {
-    const setName = card.setName || "Imported";
-    const cardNumber = card.number || card.id;
-
-    const { data: existingCard, error: selectError } = await supabase
-      .from("cards")
-      .select("id")
-      .eq("name", card.name)
-      .eq("set_name", setName)
-      .eq("card_number", cardNumber)
-      .maybeSingle();
-
-    if (selectError) {
-      console.warn("Failed to look up card", card.name, selectError.message);
-      continue;
-    }
-
-    const { data: insertedCard, error: insertCardError } = existingCard
-      ? { data: null, error: null }
-      : await supabase
-      .from("cards")
-      .insert(
-        {
-          name: card.name,
-          set_name: setName,
-          card_number: cardNumber,
-          rarity: card.rarity || "Imported",
-          type: card.type || "Colorless",
-          generation: card.generation || "",
-          image_url: card.imageUrl,
-          official_metadata_source: card.id.startsWith("search-") ? "tcgdex" : "import"
-        }
-      )
-      .select("id")
-      .single();
-
-    const catalogCardId = existingCard?.id ?? insertedCard?.id;
-    if (insertCardError || !catalogCardId) {
-      console.warn("Failed to insert card", card.name, insertCardError?.message);
-      continue;
-    }
-
-    const rows = Array.from({ length: Math.max(1, card.qty) }, () => ({
-      user_id: user.id,
-      card_id: catalogCardId,
-      status: card.status,
-      verification_status: "unverified" as VerificationStatus,
-      condition: "Near Mint",
-      language: "English",
-      edition: "Imported",
-      is_holo: false
-    }));
-
-    const { error: insertError } = await supabase.from("user_cards").insert(rows);
-    if (insertError) {
-      console.warn("Failed to insert user cards", card.name, insertError.message);
-      continue;
-    }
-
-    count += rows.length;
+  const res = await fetch("/api/binder/import", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ cards })
+  });
+  const json = await res.json();
+  if (!res.ok) {
+    return { saved: false, count: 0, reason: json.error ?? "Could not save cards to your online binder." };
   }
-
-  return { saved: count > 0, count };
+  return { saved: true, count: json.count ?? 0 };
 }
 
 export type MarketplaceListing = CollectorCard & { ownerUserId: string };
@@ -317,72 +261,25 @@ export async function createTrade(opts: {
   if (opts.proposerCardIds.length === 0) return { ok: false, reason: "Add at least one card to your offer." };
   if (opts.receiverCardIds.length === 0) return { ok: false, reason: "Select at least one card you want in return." };
 
-  const allCardIds = [...opts.proposerCardIds, ...opts.receiverCardIds];
-  const { data: tradeCards, error: cardError } = await supabase
-    .from("user_cards")
-    .select("id,user_id,status,verification_status")
-    .in("id", allCardIds);
-
-  if (cardError || !tradeCards || tradeCards.length !== allCardIds.length) {
-    return { ok: false, reason: "Could not validate every card in this offer." };
-  }
-
-  const rows = tradeCards as Array<{ id: string; user_id: string; status: CardStatus; verification_status: VerificationStatus }>;
-  const cardsById = new Map(rows.map((row) => [row.id, row]));
-  const invalidProposerCard = opts.proposerCardIds.some((id) => {
-    const row = cardsById.get(id);
-    return !row || row.user_id !== user.id || !isTradeGradeVerification(row.verification_status);
+  const res = await fetch("/api/trades", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(opts)
   });
-  if (invalidProposerCard) {
-    return { ok: false, reason: "Every card you offer must be source-verified or wallet-verified before a trade can be sent." };
-  }
-
-  const invalidReceiverCard = opts.receiverCardIds.some((id) => {
-    const row = cardsById.get(id);
-    return !row || row.user_id !== opts.receiverUserId || row.status !== "for_trade" || !isTradeGradeVerification(row.verification_status);
-  });
-  if (invalidReceiverCard) {
-    return { ok: false, reason: "The requested cards must be listed for trade and backed by trusted source validation." };
-  }
-
-  const { data: trade, error: tradeError } = await supabase
-    .from("trades")
-    .insert({
-      proposer_id: user.id,
-      receiver_id: opts.receiverUserId,
-      status: "sent",
-    })
-    .select("id")
-    .single();
-
-  if (tradeError || !trade) {
-    return { ok: false, reason: tradeError?.message ?? "Failed to create trade." };
-  }
-
-  const items = [
-    ...opts.proposerCardIds.map((id) => ({ trade_id: trade.id, user_card_id: id, side: "proposer" })),
-    ...opts.receiverCardIds.map((id) => ({ trade_id: trade.id, user_card_id: id, side: "receiver" })),
-  ];
-
-  const { error: itemsError } = await supabase.from("trade_items").insert(items);
-  if (itemsError) {
-    return { ok: false, reason: itemsError.message };
-  }
-
-  return { ok: true, tradeId: trade.id };
+  const json = await res.json();
+  if (!res.ok) return { ok: false, reason: json.error ?? "Failed to create trade." };
+  return { ok: true, tradeId: json.tradeId };
 }
 
 export async function updateUserCardStatus(userCardId: string, status: CardStatus): Promise<boolean> {
-  const supabase = createSupabaseBrowserClient();
-  if (!supabase) return false;
-
-  const { error } = await supabase
-    .from("user_cards")
-    .update({ status })
-    .eq("id", userCardId);
-
-  if (error) {
-    console.warn("Failed to update card status", userCardId, error.message);
+  const res = await fetch("/api/user-cards/status", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ userCardId, status })
+  });
+  if (!res.ok) {
+    const json = await res.json().catch(() => null);
+    console.warn("Failed to update card status", userCardId, json?.error ?? res.statusText);
     return false;
   }
   return true;

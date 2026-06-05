@@ -4,9 +4,9 @@ import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { ArrowRightLeft, CheckCircle2, Maximize2, MessageSquare, Plus, RefreshCw, ShieldCheck, X } from "lucide-react";
 import { Button, CardArt, SectionHeader, cx } from "@/components/ui";
-import { CollectorCard, cards, tradeStatuses } from "@/lib/data";
+import { CollectorCard, tradeStatuses } from "@/lib/data";
 import { createTrade, fetchSingleUserCard, fetchUserBinderCards } from "@/lib/binder-db";
-import { isTradeGradeVerification } from "@/lib/trusted-verification";
+import { sanitizeProofUrl } from "@/lib/proof-url";
 
 export function SwapBuilder({ requestedCardId }: { requestedCardId?: string | null }) {
   const [status, setStatus] = useState("Draft");
@@ -29,10 +29,6 @@ export function SwapBuilder({ requestedCardId }: { requestedCardId?: string | nu
         setMyCards(forTrade);
         setSelectedMyCardIds(new Set(forTrade.map((c) => c.id)));
         setUsingSupabase(true);
-      } else {
-        const mock = cards.filter((c) => c.owner === "You" && c.status === "for_trade");
-        setMyCards(mock);
-        setSelectedMyCardIds(new Set(mock.map((c) => c.id)));
       }
     });
   }, []);
@@ -52,7 +48,7 @@ export function SwapBuilder({ requestedCardId }: { requestedCardId?: string | nu
 
   const theirCards: CollectorCard[] = useMemo(() => {
     if (requestedCard) return [requestedCard];
-    return cards.filter((c) => c.owner !== "You" && c.status === "for_trade" && isTradeGradeVerification(c.verificationStatus)).slice(0, 2);
+    return [];
   }, [requestedCard]);
 
   function toggleMyCard(id: string) {
@@ -84,6 +80,7 @@ export function SwapBuilder({ requestedCardId }: { requestedCardId?: string | nu
     if (res.ok) {
       setResult({ ok: true, message: "Trade sent! The other collector will be notified." });
       setStatus("Sent");
+      window.dispatchEvent(new CustomEvent("rareroom:open-trade-chat", { detail: { tradeId: res.tradeId } }));
     } else {
       setResult({ ok: false, message: res.reason });
     }
@@ -390,11 +387,12 @@ function getProofLabel(card: CollectorCard) {
 }
 
 function getProofHref(card: CollectorCard) {
-  return card.proofUrl || `/verification?card=${encodeURIComponent(card.id)}`;
+  return sanitizeProofUrl(card.proofUrl) || `/verification?card=${encodeURIComponent(card.id)}`;
 }
 
 function isExternalProof(card: CollectorCard) {
-  return Boolean(card.proofUrl && /^https?:\/\//i.test(card.proofUrl));
+  const proofUrl = sanitizeProofUrl(card.proofUrl);
+  return Boolean(proofUrl && /^https:\/\//i.test(proofUrl));
 }
 
 function ProofLink({ card, children, className }: { card: CollectorCard; children: ReactNode; className?: string }) {

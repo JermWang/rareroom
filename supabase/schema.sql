@@ -110,6 +110,23 @@ create table if not exists public.provider_connections (
 
 create index if not exists provider_connections_user_provider_idx on public.provider_connections(user_id, provider);
 
+create table if not exists public.wallet_link_challenges (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references public.users(id) on delete cascade,
+  wallet_address text not null,
+  wallet_chain text not null check (wallet_chain in ('evm', 'solana')),
+  message text not null,
+  expires_at timestamptz not null,
+  used_at timestamptz,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists wallet_link_challenges_user_id_idx on public.wallet_link_challenges(user_id);
+create index if not exists wallet_link_challenges_expires_at_idx on public.wallet_link_challenges(expires_at);
+create unique index if not exists users_wallet_chain_address_unique
+on public.users(wallet_chain, wallet_address)
+where wallet_address is not null;
+
 create table if not exists public.trades (
   id uuid primary key default gen_random_uuid(),
   proposer_id uuid not null references public.users(id) on delete cascade,
@@ -325,7 +342,32 @@ alter table public.trade_items enable row level security;
 alter table public.messages enable row level security;
 alter table public.verification_proofs enable row level security;
 alter table public.provider_connections enable row level security;
+alter table public.wallet_link_challenges enable row level security;
 alter table public.reputation_events enable row level security;
+
+revoke select on public.users from anon, authenticated;
+grant select (id, username, avatar_url, reputation_score, collector_level, favorite_type, created_at)
+on public.users to anon, authenticated;
+
+revoke update on public.users from authenticated;
+grant update (username, avatar_url, favorite_type)
+on public.users to authenticated;
+
+revoke insert, update, delete on public.cards from anon, authenticated;
+revoke insert, update, delete on public.user_cards from anon, authenticated;
+revoke insert, update, delete on public.provider_connections from anon, authenticated;
+revoke insert, update, delete on public.wallet_link_challenges from anon, authenticated;
+revoke insert, update, delete on public.trades from anon, authenticated;
+revoke insert, update, delete on public.trade_items from anon, authenticated;
+revoke insert, update, delete on public.messages from anon, authenticated;
+revoke insert, update, delete on public.verification_proofs from anon, authenticated;
+revoke insert, update, delete on public.reputation_events from anon, authenticated;
+
+revoke select on public.provider_connections from anon, authenticated;
+grant select (id, user_id, provider, external_account_id, status, scopes, last_verified_at, created_at, updated_at)
+on public.provider_connections to authenticated;
+
+revoke select on public.wallet_link_challenges from anon, authenticated;
 
 drop policy if exists "Profiles are readable" on public.users;
 create policy "Profiles are readable" on public.users
@@ -341,47 +383,32 @@ create policy "Public cards are readable" on public.cards
 for select using (true);
 
 drop policy if exists "Authenticated users can insert catalog cards" on public.cards;
-create policy "Authenticated users can insert catalog cards" on public.cards
-for insert to authenticated
-with check (true);
 
 drop policy if exists "Public for-trade and wishlist cards are readable" on public.user_cards;
 create policy "Public for-trade and wishlist cards are readable" on public.user_cards
 for select using (
   auth.uid() = user_id
-  or status in ('for_trade', 'wishlist')
+  or status = 'wishlist'
+  or (status = 'for_trade' and trade_eligible = true)
 );
 
 drop policy if exists "Users manage own cards" on public.user_cards;
-create policy "Users manage own cards" on public.user_cards
-for all using (auth.uid() = user_id)
-with check (auth.uid() = user_id);
 
 drop policy if exists "Users read own provider connections" on public.provider_connections;
 create policy "Users read own provider connections" on public.provider_connections
 for select using (auth.uid() = user_id);
 
 drop policy if exists "Users create own provider connections" on public.provider_connections;
-create policy "Users create own provider connections" on public.provider_connections
-for insert with check (auth.uid() = user_id);
 
 drop policy if exists "Users update own provider connections" on public.provider_connections;
-create policy "Users update own provider connections" on public.provider_connections
-for update using (auth.uid() = user_id)
-with check (auth.uid() = user_id);
 
 drop policy if exists "Trade participants read trades" on public.trades;
 create policy "Trade participants read trades" on public.trades
 for select using (auth.uid() in (proposer_id, receiver_id));
 
 drop policy if exists "Users create proposed trades" on public.trades;
-create policy "Users create proposed trades" on public.trades
-for insert with check (auth.uid() = proposer_id);
 
 drop policy if exists "Trade participants update trades" on public.trades;
-create policy "Trade participants update trades" on public.trades
-for update using (auth.uid() in (proposer_id, receiver_id))
-with check (auth.uid() in (proposer_id, receiver_id));
 
 drop policy if exists "Trade participants read trade items" on public.trade_items;
 create policy "Trade participants read trade items" on public.trade_items
@@ -393,19 +420,6 @@ for select using (
 );
 
 drop policy if exists "Trade participants manage trade items" on public.trade_items;
-create policy "Trade participants manage trade items" on public.trade_items
-for all using (
-  exists (
-    select 1 from public.trades t
-    where t.id = trade_id and auth.uid() in (t.proposer_id, t.receiver_id)
-  )
-)
-with check (
-  exists (
-    select 1 from public.trades t
-    where t.id = trade_id and auth.uid() in (t.proposer_id, t.receiver_id)
-  )
-);
 
 drop policy if exists "Participants read trade messages" on public.messages;
 create policy "Participants read trade messages" on public.messages
@@ -417,14 +431,6 @@ for select using (
 );
 
 drop policy if exists "Participants send trade messages" on public.messages;
-create policy "Participants send trade messages" on public.messages
-for insert with check (
-  auth.uid() = sender_id
-  and exists (
-    select 1 from public.trades t
-    where t.id = trade_id and auth.uid() in (t.proposer_id, t.receiver_id)
-  )
-);
 
 drop policy if exists "Users read own verification proofs" on public.verification_proofs;
 create policy "Users read own verification proofs" on public.verification_proofs
@@ -436,15 +442,6 @@ for select using (
 );
 
 drop policy if exists "Users create own verification proofs" on public.verification_proofs;
-create policy "Users create own verification proofs" on public.verification_proofs
-for insert with check (
-  is_trade_grade = false
-  and
-  exists (
-    select 1 from public.user_cards uc
-    where uc.id = user_card_id and uc.user_id = auth.uid()
-  )
-);
 
 drop policy if exists "Reputation events are readable" on public.reputation_events;
 create policy "Reputation events are readable" on public.reputation_events

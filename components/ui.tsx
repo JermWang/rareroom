@@ -402,6 +402,34 @@ function rarityAccentClass(rarity: string): string {
   return "text-[var(--muted)]";
 }
 
+// Quiet, inline trust + status signals for card tiles (no pill chrome).
+function CardTrust({ status }: { status: CollectorCard["verificationStatus"] }) {
+  const map = {
+    unverified: { Icon: ShieldCheck, color: "text-[var(--muted)]" },
+    pending: { Icon: Clock, color: "text-[var(--sun-deep)]" },
+    verified: { Icon: BadgeCheck, color: "text-[#0f9e78]" },
+    wallet_verified: { Icon: ShieldCheck, color: "text-[#7c3aed]" },
+    disputed: { Icon: TriangleAlert, color: "text-[var(--red)]" }
+  }[status];
+  const Icon = map.Icon;
+  return (
+    <span className={cx("inline-flex items-center gap-1.5 text-[11.5px] font-bold", map.color)}>
+      <Icon size={13} strokeWidth={2.4} />
+      {verificationCopy[status]}
+    </span>
+  );
+}
+
+function CardStatusText({ status }: { status: CollectorCard["status"] }) {
+  const Icon = statusIcons[status];
+  return (
+    <span className="inline-flex items-center gap-1.5 text-[11.5px] font-bold text-[var(--muted)]">
+      <Icon size={12} strokeWidth={2.4} />
+      {statusCopy[status]}
+    </span>
+  );
+}
+
 export function CardTile({ card, compact = false, onStatusChange }: { card: CollectorCard; compact?: boolean; onStatusChange?: (status: CollectorCard["status"]) => void }) {
   const className = "rr-card-shell group";
   const inner = (
@@ -415,18 +443,23 @@ export function CardTile({ card, compact = false, onStatusChange }: { card: Coll
         ) : null}
       </div>
       <div className="rr-card-body">
-        {!card.imported ? (
-          <div className={cx("rr-card-kicker truncate", rarityAccentClass(card.rarity))}>{card.rarity}</div>
-        ) : null}
-        <div className="mt-1 flex items-baseline justify-between gap-2.5">
+        <div className="flex items-baseline justify-between gap-2.5">
           <h3 className="rr-card-title min-w-0 flex-1 truncate">{card.name}</h3>
           <span className="rr-card-value shrink-0">{card.estimatedValue}</span>
         </div>
-        <p className="rr-card-subtitle mt-0.5 truncate">
-          {card.setName} · {card.cardNumber}
-        </p>
+        <div className="mt-1 flex items-center justify-between gap-2">
+          <p className="rr-card-subtitle min-w-0 truncate">
+            {card.setName} · {card.cardNumber}
+          </p>
+          {!card.imported && card.rarity ? (
+            <span className={cx("shrink-0 text-[10px] font-black uppercase tracking-[0.05em]", rarityAccentClass(card.rarity))}>
+              {card.rarity}
+            </span>
+          ) : null}
+        </div>
         {!compact ? (
-          <div className="rr-card-meta-line">
+          <div className="mt-3 flex items-center justify-between gap-2">
+            <CardTrust status={card.verificationStatus} />
             {onStatusChange ? (
               <select
                 value={card.status}
@@ -440,9 +473,8 @@ export function CardTile({ card, compact = false, onStatusChange }: { card: Coll
                 <option value="locked">Locked</option>
               </select>
             ) : (
-              <StatusBadge status={card.status} />
+              <CardStatusText status={card.status} />
             )}
-            <VerificationBadge status={card.verificationStatus} />
           </div>
         ) : null}
       </div>

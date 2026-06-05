@@ -286,6 +286,66 @@ export async function updateUserCardStatus(userCardId: string, status: CardStatu
   return true;
 }
 
+export type TradeRequest = {
+  id: string;
+  direction: "incoming" | "outgoing";
+  status: string;
+  collector: string;
+  cardName: string;
+  value: string;
+};
+
+// The signed-in collector's incoming + outgoing trades (RLS-scoped to participants).
+export async function fetchUserTrades(): Promise<TradeRequest[] | null> {
+  const supabase = createSupabaseBrowserClient();
+  if (!supabase) return null;
+  const { data: userData } = await supabase.auth.getUser();
+  const user = userData.user;
+  if (!user) return null;
+
+  const { data, error } = await supabase
+    .from("trades")
+    .select(
+      `
+      id, status, proposer_id, receiver_id, created_at,
+      proposer:users!trades_proposer_id_fkey ( username ),
+      receiver:users!trades_receiver_id_fkey ( username ),
+      trade_items ( side, user_cards ( estimated_value, cards ( name ) ) )
+    `
+    )
+    .or(`proposer_id.eq.${user.id},receiver_id.eq.${user.id}`)
+    .order("created_at", { ascending: false })
+    .limit(20);
+
+  if (error || !data) return null;
+
+  type Row = {
+    id: string;
+    status: string;
+    proposer_id: string;
+    receiver_id: string;
+    proposer: { username: string } | null;
+    receiver: { username: string } | null;
+    trade_items: { side: "proposer" | "receiver"; user_cards: { estimated_value: number | null; cards: { name: string } | null } | null }[] | null;
+  };
+
+  return (data as unknown as Row[]).map((t) => {
+    const incoming = t.receiver_id === user.id;
+    // The card the viewer would receive comes from the other party's side.
+    const wantSide = incoming ? "proposer" : "receiver";
+    const item = (t.trade_items ?? []).find((i) => i.side === wantSide) ?? (t.trade_items ?? [])[0];
+    const value = item?.user_cards?.estimated_value;
+    return {
+      id: t.id,
+      direction: incoming ? "incoming" : "outgoing",
+      status: incoming && t.status === "sent" ? "Incoming" : t.status.charAt(0).toUpperCase() + t.status.slice(1),
+      collector: (incoming ? t.proposer?.username : t.receiver?.username) ?? "Collector",
+      cardName: item?.user_cards?.cards?.name ?? "Trade",
+      value: value == null ? "—" : `$${value}`
+    };
+  });
+}
+
 function normalizeCardType(type: string): CardType {
   const allowed = new Set(["Fire", "Water", "Grass", "Lightning", "Psychic", "Fighting", "Darkness", "Metal", "Dragon", "Fairy", "Colorless"]);
   return allowed.has(type) ? (type as CardType) : "Colorless";

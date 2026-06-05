@@ -7,7 +7,7 @@ import { useSearchParams } from "next/navigation";
 import { ArrowUpDown, BadgeCheck, Gem, Handshake, MessageSquare, Shield, Zap } from "lucide-react";
 import { Button, CardArt, CollectorRow, PageShell, SearchBar, SectionHeader, cx } from "@/components/ui";
 import { CollectorCard } from "@/lib/data";
-import { fetchMarketplaceListings } from "@/lib/binder-db";
+import { fetchMarketplaceListings, fetchUserTrades, TradeRequest } from "@/lib/binder-db";
 import { sanitizeProofUrl } from "@/lib/proof-url";
 
 type HubTab = "browse" | "build" | "requests";
@@ -35,12 +35,6 @@ const importSource: Record<string, string> = {
   KantoKei: "TCGdex search",
   You: "Manual import"
 };
-
-const requestRows = [
-  { status: "Incoming", collector: "MiraMint", card: "Umbreon VMAX", value: "$420 - $560", tone: "text-[var(--mint)]" },
-  { status: "Countered", collector: "HoloHana", card: "Blastoise", value: "$120 - $180", tone: "text-[var(--sun-deep)]" },
-  { status: "Sent", collector: "KantoKei", card: "Rayquaza VMAX", value: "$180 - $240", tone: "text-[var(--sky-deep)]" }
-];
 
 export default function MarketplacePage() {
   return (
@@ -193,9 +187,28 @@ function BrowseTab({ listings, loading, usingLive }: { listings: CollectorCard[]
   );
 }
 
+function statusTone(status: string): string {
+  if (status === "Incoming") return "text-[var(--mint)]";
+  if (status === "Countered") return "text-[var(--sun-deep)]";
+  if (status === "Disputed" || status === "Cancelled") return "text-[var(--red)]";
+  return "text-[var(--sky-deep)]";
+}
+
 function RequestsTab() {
-  function openTradeChat() {
-    window.dispatchEvent(new Event("rareroom:open-trade-chat"));
+  const [requests, setRequests] = useState<TradeRequest[] | null>(null);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    fetchUserTrades().then((data) => {
+      setRequests(data);
+      setLoaded(true);
+    });
+  }, []);
+
+  function openTradeChat(tradeId?: string) {
+    window.dispatchEvent(
+      tradeId ? new CustomEvent("rareroom:open-trade-chat", { detail: { tradeId } }) : new Event("rareroom:open-trade-chat")
+    );
   }
 
   return (
@@ -204,27 +217,36 @@ function RequestsTab() {
         title="Trade Requests"
         copy="Incoming offers, counters, and sent proposals stay in a short action list instead of another inbox."
         action={
-          <Button onClick={openTradeChat} variant="secondary" className="min-h-10 px-4 text-xs">
+          <Button onClick={() => openTradeChat()} variant="secondary" className="min-h-10 px-4 text-xs">
             <MessageSquare size={16} />
             Trade chat
           </Button>
         }
       />
-      <div className="divide-y divide-[rgba(23,58,99,0.12)] border-y border-[rgba(23,58,99,0.14)]">
-        {requestRows.map((row) => (
-          <div key={`${row.status}-${row.card}`} className="grid gap-3 py-4 md:grid-cols-[130px_1fr_auto_auto] md:items-center">
-            <span className={cx("text-xs font-black uppercase tracking-[0.1em]", row.tone)}>{row.status}</span>
-            <div className="min-w-0">
-              <h3 className="truncate text-base font-black text-[var(--navy)]">{row.card}</h3>
-              <p className="text-sm font-bold text-[var(--muted)]">With {row.collector}</p>
+      {!loaded ? (
+        <div className="border-y border-[rgba(23,58,99,0.14)] py-12 text-center text-sm font-bold text-[var(--muted)]">Loading requests…</div>
+      ) : !requests || requests.length === 0 ? (
+        <div className="border-y border-[rgba(23,58,99,0.14)] py-12 text-center">
+          <p className="text-sm font-black text-[var(--navy)]">No trade requests yet.</p>
+          <p className="mt-1 text-xs font-bold text-[var(--muted)]">Offers you send or receive will appear here.</p>
+        </div>
+      ) : (
+        <div className="divide-y divide-[rgba(23,58,99,0.12)] border-y border-[rgba(23,58,99,0.14)]">
+          {requests.map((row) => (
+            <div key={row.id} className="grid gap-3 py-4 md:grid-cols-[130px_1fr_auto_auto] md:items-center">
+              <span className={cx("text-xs font-black uppercase tracking-[0.1em]", statusTone(row.status))}>{row.status}</span>
+              <div className="min-w-0">
+                <h3 className="truncate text-base font-black text-[var(--navy)]">{row.cardName}</h3>
+                <p className="text-sm font-bold text-[var(--muted)]">With {row.collector}</p>
+              </div>
+              <span className="text-sm font-black text-[var(--sun-deep)]">{row.value}</span>
+              <Button onClick={() => openTradeChat(row.id)} variant="secondary" className="min-h-9 px-3 text-xs">
+                Review
+              </Button>
             </div>
-            <span className="text-sm font-black text-[var(--sun-deep)]">{row.value}</span>
-            <Button href="/marketplace?tab=build" variant="secondary" className="min-h-9 px-3 text-xs">
-              Review
-            </Button>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

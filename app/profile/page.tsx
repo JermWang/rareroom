@@ -59,7 +59,7 @@ export default async function ProfilePage() {
         </div>
         <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
           <div>
-            <SectionHeader title="Public Binder" copy="For-trade cards, wishlist targets, locked favorites, and verified ownership proof are visible to other collectors." />
+            <SectionHeader title="Public Binder" copy="For-trade cards, wishlist targets, locked favorites, and trusted source status are visible to other collectors." />
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {publicCards.map((card) => (
                 <CardTile key={card.id} card={card} />

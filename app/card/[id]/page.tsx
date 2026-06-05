@@ -45,12 +45,12 @@ export default async function CardDetailPage({ params }: { params: Promise<{ id:
               </div>
             </div>
             <div className="glass rounded-2xl p-5">
-              <h2 className="font-black text-white">Ownership proof</h2>
+              <h2 className="font-black text-white">Trade validation</h2>
               <div className="mt-4 space-y-3">
-                {["Screenshot proof", "Import proof", "Manual verified badge", "Wallet signature proof optional"].map((item, index) => (
+                {["Provider inventory connection", "Partner API attestation", "Wallet or onchain receipt", "Metadata match for identification only"].map((item, index) => (
                   <div key={item} className="rounded-lg border border-line bg-white/[0.045] p-3">
                     <div className="font-black text-white">{item}</div>
-                    <p className="mt-1 text-xs text-white/50">{index < 2 ? "Proof attached and ready for review." : "Available when higher trust is needed."}</p>
+                    <p className="mt-1 text-xs text-white/50">{index < 3 ? "Can approve trading when verified by a trusted source." : "Cannot approve a trade by itself."}</p>
                   </div>
                 ))}
               </div>
@@ -60,7 +60,7 @@ export default async function CardDetailPage({ params }: { params: Promise<{ id:
             <h2 className="font-black text-white">Trade status</h2>
             <p className="mt-2 text-sm text-white/55">Available, in negotiation, locked, or not for trade statuses are shown before offers can be sent.</p>
             <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-              <Button href="/swap">
+              <Button href={`/marketplace?tab=build&card=${card.id}`}>
                 <Repeat2 size={16} />
                 Make offer
               </Button>

@@ -15,9 +15,7 @@ import {
   Sparkles,
   Store,
   UploadCloud,
-  UserRound,
-  Wrench,
-  Zap
+  Wrench
 } from "lucide-react";
 import { cards, CollectorCard, collectors, isVerified, statusCopy, statusIcons, typePalette, verificationCopy } from "@/lib/data";
 import { supabase } from "@/lib/supabase";
@@ -30,9 +28,9 @@ type TradeCycleStep = {
 
 const tradeCycleSteps: TradeCycleStep[] = [
   { title: "Import", copy: "Bring your cards into a clean binder first.", imageUrl: "/images/cards/charizard-base1-4.png" },
-  { title: "Verify", copy: "Attach ownership proof to the cards that matter.", imageUrl: "/images/cards/blastoise-base1-2.png" },
-  { title: "Swap", copy: "Spin through matches and build balanced offers.", imageUrl: "/images/cards/rayquaza-swsh7-218.png" },
-  { title: "Record", copy: "Keep proof status, receipts, and trade history visible.", imageUrl: "/images/cards/umbreon-swsh7-215.png" }
+  { title: "Verify", copy: "Connect trusted source validation to cards that matter.", imageUrl: "/images/cards/blastoise-base1-2.png" },
+  { title: "Swap", copy: "Spin through approved matches and build balanced offers.", imageUrl: "/images/cards/rayquaza-swsh7-218.png" },
+  { title: "Record", copy: "Keep source status, receipts, and trade history visible.", imageUrl: "/images/cards/umbreon-swsh7-215.png" }
 ];
 
 export function cx(...parts: Array<string | false | null | undefined>) {
@@ -110,11 +108,9 @@ export function Button({
 export function Header() {
   const path = usePathname();
   const nav = [
-    { href: "/swap", label: "Swap" },
+    { href: "/marketplace", label: "Swap Hub" },
     { href: "/binder", label: "Binder" },
-    { href: "/import", label: "Import" },
-    { href: "/marketplace", label: "Marketplace" },
-    { href: "/verification", label: "Verify" }
+    { href: "/import", label: "Import" }
   ];
 
   return (
@@ -124,9 +120,10 @@ export function Header() {
           <img src="/images/rareroom-logo-cropped.png" alt="RareRoom" className="h-12 w-auto" />
         </Link>
         <nav className="app-header-nav hidden items-center justify-self-center md:flex">
-          {nav.map((item) =>
-            item.href === "/swap" ? (
-              <Link key={item.href} href={item.href} className={cx("nav-swap", path === item.href && "nav-swap-active")}>
+          {nav.map((item) => {
+            const active = path === item.href || (item.href === "/marketplace" && path === "/swap");
+            return item.href === "/marketplace" ? (
+              <Link key={item.href} href={item.href} className={cx("nav-swap", active && "nav-swap-active")}>
                 {item.label}
               </Link>
             ) : (
@@ -135,13 +132,13 @@ export function Header() {
                 href={item.href}
                 className={cx(
                   "inline-flex items-center rounded-full px-3.5 py-2 text-[13px] font-black uppercase tracking-[0.08em] text-[var(--muted)] transition hover:text-[var(--navy)]",
-                  path === item.href && "bg-white/70 text-[var(--navy)] shadow-sm"
+                  active && "bg-white/70 text-[var(--navy)] shadow-sm"
                 )}
               >
                 {item.label}
               </Link>
-            )
-          )}
+            );
+          })}
         </nav>
         <HeaderAuth />
       </div>
@@ -254,19 +251,17 @@ function HeaderAuth() {
 export function MobileNav() {
   const path = usePathname();
   const items = [
+    { href: "/marketplace", label: "Swap Hub", icon: Store },
     { href: "/binder", label: "Binder", icon: LayoutDashboard },
-    { href: "/marketplace", label: "Trades", icon: Store },
-    { href: "/swap", label: "Swap", icon: Zap },
-    { href: "/import", label: "Import", icon: UploadCloud },
-    { href: "/profile", label: "Me", icon: UserRound }
+    { href: "/import", label: "Import", icon: UploadCloud }
   ];
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t-2 border-[var(--line)] bg-[#f8fcff]/92 backdrop-blur-xl md:hidden">
-      <div className="grid grid-cols-5">
+      <div className="grid grid-cols-3">
         {items.map((item) => {
           const Icon = item.icon;
-          const active = path === item.href;
+          const active = path === item.href || (item.href === "/marketplace" && path === "/swap");
           return (
             <Link key={item.href} href={item.href} className={cx("flex flex-col items-center gap-1 px-2 py-2 text-[11px] font-black", active ? "text-[var(--red)]" : "text-[var(--muted)]")}>
               <Icon size={18} />
@@ -456,7 +451,7 @@ export function AppPreview() {
         ))}
       </div>
       <div className="mt-3 grid grid-cols-3 gap-2">
-        <MiniProof tone="mint" title="Verified owner" copy="Proof badge active" />
+        <MiniProof tone="mint" title="Source verified" copy="Trade badge active" />
         <MiniProof tone="sun" title="Wishlist match" copy="2 cards found" />
         <MiniProof tone="sky" title="Fair swap" copy="Values balanced" />
       </div>
@@ -715,7 +710,7 @@ export function ActivityRail() {
               <span className="text-sm font-black text-[var(--navy)]">{card.name}</span>
               <VerificationBadge status={card.verificationStatus} />
             </div>
-            <p className="mt-1 text-xs font-bold text-[var(--muted)]">{card.owner} updated proof status.</p>
+            <p className="mt-1 text-xs font-bold text-[var(--muted)]">{card.owner} updated source status.</p>
           </div>
         ))}
       </div>

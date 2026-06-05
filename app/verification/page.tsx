@@ -1,12 +1,16 @@
-import { AlertTriangle, BadgeCheck, Clock, Eye, ShieldAlert, ShieldCheck } from "lucide-react";
+import { BadgeCheck } from "lucide-react";
 import { Button, PageShell, SectionHeader, Stat } from "@/components/ui";
 import { proofTypes } from "@/lib/data";
+import { rejectedVerificationSources, trustedVerificationProviders } from "@/lib/trusted-verification";
 
 export default function VerificationPage() {
   return (
     <PageShell>
       <section className="mx-auto max-w-7xl px-4 py-8 md:px-6">
-        <SectionHeader title="Verification Center" copy="Trust should be visible but not annoying. Manage proof, warnings, disputes, and optional wallet receipts in one place." />
+        <SectionHeader
+          title="Verification Center"
+          copy="Trade approval requires trusted source validation. Screenshots, manual entry, and metadata-only matches can help import cards, but they cannot approve a trade."
+        />
         <div className="mb-6 grid gap-3 sm:grid-cols-4">
           <Stat label="Verified cards" value="118" tone="accent" />
           <Stat label="Pending review" value="7" />
@@ -27,27 +31,34 @@ export default function VerificationPage() {
         </div>
         <div className="mt-6 grid gap-5 lg:grid-cols-[1fr_360px]">
           <div className="glass rounded-2xl p-5">
-            <h2 className="text-xl font-black text-white">Badge levels</h2>
-            <div className="mt-4 grid gap-3 sm:grid-cols-4">
-              <Badge tone="bg-white/10 text-white/54" label="Grey" copy="Unverified" />
-              <Badge tone="bg-sky/15 text-sky" label="Blue" copy="Platform verified" />
-              <Badge tone="bg-purple-300/15 text-purple-200" label="Purple" copy="Wallet verified" />
-              <Badge tone="bg-volt/18 text-volt" label="Gold" copy="High-trust collector" />
+            <h2 className="text-xl font-black text-white">Trade-grade sources</h2>
+            <div className="mt-4 grid gap-3 md:grid-cols-2">
+              {Object.values(trustedVerificationProviders).map((provider) => {
+                const Icon = provider.icon;
+                return (
+                  <div key={provider.name} className="rounded-lg border border-line bg-white/[0.045] p-4">
+                    <div className="flex items-start gap-3">
+                      <Icon className="mt-1 shrink-0 text-volt" size={18} />
+                      <div>
+                        <h3 className="text-sm font-black text-white">{provider.name}</h3>
+                        <p className="mt-1 text-xs font-bold leading-5 text-white/48">{provider.detail}</p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
           <div className="glass rounded-2xl p-5">
-            <h2 className="text-xl font-black text-white">Fraud controls</h2>
+            <h2 className="text-xl font-black text-white">Blocked as proof</h2>
             <div className="mt-4 space-y-3">
-              {[
-                { label: "Duplicate listing detection", Icon: Eye },
-                { label: "Suspicious account warnings", Icon: ShieldAlert },
-                { label: "Trade cooldowns for new users", Icon: Clock },
-                { label: "Reputation penalties", Icon: AlertTriangle },
-                { label: "Dispute button", Icon: ShieldCheck }
-              ].map(({ label, Icon }) => (
-                <div key={label} className="flex items-center gap-3 rounded-lg border border-line bg-white/[0.045] p-3 text-sm font-black text-white/72">
-                  <Icon className="text-mint" size={18} />
-                  {label}
+              {rejectedVerificationSources.map(({ name, detail, icon: Icon }) => (
+                <div key={name} className="rounded-lg border border-line bg-white/[0.045] p-3">
+                  <div className="flex items-center gap-3 text-sm font-black text-white/72">
+                    <Icon className="text-danger" size={18} />
+                    {name}
+                  </div>
+                  <p className="mt-1 pl-8 text-xs font-bold leading-5 text-white/42">{detail}</p>
                 </div>
               ))}
             </div>
@@ -59,14 +70,5 @@ export default function VerificationPage() {
         </div>
       </section>
     </PageShell>
-  );
-}
-
-function Badge({ tone, label, copy }: { tone: string; label: string; copy: string }) {
-  return (
-    <div className="rounded-lg border border-line bg-white/[0.045] p-4">
-      <div className={`inline-flex rounded-md px-2 py-1 text-xs font-black ${tone}`}>{label}</div>
-      <div className="mt-3 text-sm font-black text-white">{copy}</div>
-    </div>
   );
 }

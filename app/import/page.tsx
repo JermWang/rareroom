@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   BadgeCheck,
-  Camera,
   CheckCircle2,
   ClipboardList,
   FileSpreadsheet,
@@ -215,21 +214,21 @@ export default function ImportPage() {
     { id: "connect", label: "Connect source", icon: PlugZap },
     { id: "csv", label: "Upload export", icon: FileSpreadsheet },
     { id: "paste", label: "Paste export", icon: ClipboardList },
-    { id: "scan", label: "Scan screenshot", icon: Camera },
+    { id: "scan", label: "Catalog scan", icon: Smartphone },
     { id: "search", label: "Manual fallback", icon: Search }
   ];
 
   const connectedSources = [
     {
       name: "PTCG Live / pkmn.gg",
-      detail: "Export or copy your online collection list, then RareRoom matches the cards in bulk.",
+      detail: "Use an account-backed export or partner connection when available. Copied lists are import-only until source validated.",
       icon: Gamepad2,
       action: "Paste export",
       tab: "paste" as Tab
     },
     {
       name: "TCG Pocket",
-      detail: "Use Pocket mode for card matching, then paste or scan a collection screenshot.",
+      detail: "Pocket screenshots can help identify cards, but trade approval requires an account-backed attestation.",
       icon: Smartphone,
       action: "Use Pocket mode",
       tab: "scan" as Tab,
@@ -237,16 +236,16 @@ export default function ImportPage() {
     },
     {
       name: "Collectr / Pokellector",
-      detail: "Upload a CSV export from your collection tracker instead of entering cards one by one.",
+      detail: "Upload CSVs for bulk import. A partner/API connection is required before those cards become trade eligible.",
       icon: FileSpreadsheet,
       action: "Upload CSV",
       tab: "csv" as Tab
     },
     {
-      name: "Proof-backed imports",
-      detail: "Attach receipts, screenshots, platform exports, or wallet signatures for authenticity after import.",
+      name: "Trade-grade validation",
+      detail: "Only trusted platform attestations, verified inventory connections, wallet signatures, or onchain receipts approve trades.",
       icon: ShieldCheck,
-      action: "Review proof flow",
+      action: "Review validation",
       tab: "connect" as Tab
     }
   ];
@@ -256,7 +255,7 @@ export default function ImportPage() {
       <section className="mx-auto max-w-7xl px-4 py-8 md:px-6">
         <SectionHeader
           title="Connect your collection"
-          copy="Start from the places you already hold cards: PTCG Live, TCG Pocket, Collectr, Pokellector, CSV exports, or screenshots. RareRoom bulk-matches your collection first; manual card entry is only the fallback."
+          copy="Start from the places you already hold cards: PTCG Live, TCG Pocket, Collectr, Pokellector, and marketplace inventory exports. RareRoom bulk-matches your collection first; trusted source validation is required before anything can be traded."
           action={
             <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-line bg-white/[0.05] px-3 py-2 text-xs font-black text-white/72">
               <input type="checkbox" checked={pocket} onChange={(e) => setPocket(e.target.checked)} className="accent-volt" />
@@ -268,8 +267,8 @@ export default function ImportPage() {
         <div className="mb-5 flex items-start gap-3 rounded-xl border border-line bg-white/[0.045] p-4 text-sm leading-6 text-[var(--muted)]">
           <Info size={18} className="mt-0.5 shrink-0 text-sky" />
           <p>
-            Best path: connect a collection source by export, screenshot, or bulk list, then let RareRoom match everything automatically. Manual
-            search is reserved for one-off corrections. Card data from{" "}
+            Best path: connect a collection source or upload a provider export, then let RareRoom match everything automatically. Screenshots and
+            manual search can identify cards, but they never approve a trade. Card metadata from{" "}
             <a href="https://tcgdex.dev" target="_blank" rel="noreferrer" className="font-black text-volt underline">
               TCGdex
             </a>{" "}
@@ -306,7 +305,7 @@ export default function ImportPage() {
                   <div className="mb-5 max-w-2xl">
                     <h2 className="font-black text-white">Choose where your cards already live</h2>
                     <p className="mt-2 text-sm font-bold leading-6 text-white/52">
-                      Prioritize source-backed imports so collectors can move an existing digital collection into RareRoom in minutes.
+                      Prioritize account-backed imports so collectors can move an existing digital collection into RareRoom in minutes and validate it before trading.
                     </p>
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2">
@@ -349,7 +348,7 @@ export default function ImportPage() {
                     </button>
                   </div>
                   <p className="mb-3 text-xs leading-5 text-white/48">
-                    Paste from PTCG Live, pkmn.gg, TCG Pocket notes, or another tracker. One card per line; quantities and set/number are optional.
+                    Paste from PTCG Live, pkmn.gg, TCG Pocket notes, or another tracker. This imports and matches cards; trade approval still requires a trusted source connection.
                   </p>
                   <textarea
                     value={pasteText}
@@ -368,7 +367,7 @@ export default function ImportPage() {
                 <div>
                   <h2 className="mb-2 font-black text-white">Upload a collection export</h2>
                   <p className="mb-3 text-xs leading-5 text-white/48">
-                    Works with Collectr, Pokellector, TCGplayer-style exports, and any tracker with Name, Set, Number, and Quantity columns.
+                    Works with Collectr, Pokellector, TCGplayer-style exports, and any tracker with Name, Set, Number, and Quantity columns. CSVs are import evidence, not trade-grade validation.
                   </p>
                   <button
                     onClick={() => fileRef.current?.click()}
@@ -428,11 +427,10 @@ export default function ImportPage() {
 
               {tab === "scan" && (
                 <div className="grid place-items-center py-10 text-center">
-                  <Camera size={40} className="text-white/35" />
-                  <h2 className="mt-4 text-lg font-black text-white">Scan to import</h2>
+                  <Smartphone size={40} className="text-white/35" />
+                  <h2 className="mt-4 text-lg font-black text-white">Scan to identify</h2>
                   <p className="mt-2 max-w-sm text-sm leading-6 text-white/52">
-                    Point your camera at a card or a TCG Pocket collection screenshot and we&apos;ll recognize and match it. Coming next — the
-                    pipeline reuses the same catalog matcher.
+                    Use the camera only to recognize card names and set numbers. It will not validate ownership or make a card trade eligible.
                   </p>
                   <span className="mt-4 rounded-lg bg-white/8 px-3 py-1.5 text-xs font-black text-white/55">Coming soon</span>
                 </div>
@@ -559,10 +557,11 @@ export default function ImportPage() {
             <div className="glass rounded-2xl p-4">
               <h3 className="mb-2 font-black text-white">Supported sources</h3>
               <ul className="space-y-1.5 text-sm text-white/58">
-                <li>Primary: PTCG Live / pkmn.gg collection export</li>
-                <li>Primary: TCG Pocket screenshot or pasted list</li>
-                <li>Primary: Collectr / Pokellector CSV export</li>
-                <li>Primary: TCGplayer-style CSV export</li>
+                <li>Trade-grade: TCGplayer seller inventory connection</li>
+                <li>Trade-grade: PriceCharting collection or offer connection</li>
+                <li>Trade-grade: Collectr / Pokellector partner attestation</li>
+                <li>Trade-grade: PTCG Live / TCG Pocket account-backed attestation</li>
+                <li>Trade-grade: wallet signature or onchain receipt</li>
                 <li>Fallback: manual TCGdex search for corrections</li>
               </ul>
             </div>

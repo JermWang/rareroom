@@ -70,7 +70,7 @@ export function WalletLink() {
     <div className="rr-panel rounded-2xl p-5">
       <div className="mb-3 flex items-center gap-2">
         <ShieldCheck className="text-[var(--sky-deep)]" size={20} />
-        <h2 className="font-black text-[var(--navy)]">Wallet proof</h2>
+        <h2 className="font-black text-[var(--navy)]">Wallet connection</h2>
         <span className="ml-auto rounded-md bg-[var(--sky-soft)] px-2 py-0.5 text-[10px] font-black uppercase text-[var(--sky-deep)]">
           Optional
         </span>
@@ -85,7 +85,7 @@ export function WalletLink() {
           <Link href="/auth" className="font-black text-[var(--sky-deep)] underline">
             Sign in
           </Link>{" "}
-          to link a wallet and add a verified-owner proof badge.
+          to link a wallet. Card-level trade approval still needs a token or receipt reference.
         </div>
       ) : linked ? (
         <div>
@@ -108,7 +108,7 @@ export function WalletLink() {
       ) : (
         <div>
           <p className="mb-3 text-sm leading-6 text-[var(--muted)]">
-            Connect a wallet and sign a message to prove ownership. Nothing is spent — it&apos;s just a signature.
+            Connect a wallet and sign a message to prove account control. Nothing is spent; card-level proof still requires a token or receipt.
           </p>
           <div className="grid gap-2">
             <button

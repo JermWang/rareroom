@@ -25,18 +25,27 @@ do $$ begin
 exception when duplicate_object then null;
 end $$;
 
+alter type proof_type add value if not exists 'official_metadata_match';
+alter type proof_type add value if not exists 'platform_connection';
+alter type proof_type add value if not exists 'marketplace_inventory';
+alter type proof_type add value if not exists 'partner_api_attestation';
+alter type proof_type add value if not exists 'admin_review';
+
 create table if not exists public.users (
   id uuid primary key references auth.users(id) on delete cascade,
   username text not null unique,
   email text not null unique,
   avatar_url text,
   wallet_address text,
+  wallet_chain text,
   reputation_score integer not null default 0 check (reputation_score >= 0),
   collector_level integer not null default 1 check (collector_level >= 1),
   favorite_type text,
   is_admin boolean not null default false,
   created_at timestamptz not null default now()
 );
+
+alter table public.users add column if not exists wallet_chain text;
 
 create table if not exists public.cards (
   id uuid primary key default gen_random_uuid(),
@@ -63,16 +72,43 @@ create table if not exists public.user_cards (
   status card_status not null default 'owned',
   verification_status verification_status not null default 'unverified',
   proof_url text,
+  validation_source_provider text,
+  validation_external_reference text,
+  validation_checked_at timestamptz,
+  trade_eligible boolean not null default false,
   estimated_value numeric(12, 2),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+alter table public.user_cards add column if not exists validation_source_provider text;
+alter table public.user_cards add column if not exists validation_external_reference text;
+alter table public.user_cards add column if not exists validation_checked_at timestamptz;
+alter table public.user_cards add column if not exists trade_eligible boolean not null default false;
 
 create index if not exists user_cards_user_id_idx on public.user_cards(user_id);
 create index if not exists user_cards_card_id_idx on public.user_cards(card_id);
 create index if not exists user_cards_status_idx on public.user_cards(status);
 create index if not exists user_cards_verification_idx on public.user_cards(verification_status);
 create index if not exists user_cards_user_status_idx on public.user_cards(user_id, status);
+create index if not exists user_cards_trade_eligible_idx on public.user_cards(trade_eligible);
+
+create table if not exists public.provider_connections (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references public.users(id) on delete cascade,
+  provider text not null,
+  external_account_id text,
+  status text not null default 'pending' check (status in ('pending', 'verified', 'revoked', 'error')),
+  access_token_encrypted text,
+  refresh_token_encrypted text,
+  scopes text[] not null default '{}',
+  last_verified_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (user_id, provider)
+);
+
+create index if not exists provider_connections_user_provider_idx on public.provider_connections(user_id, provider);
 
 create table if not exists public.trades (
   id uuid primary key default gen_random_uuid(),
@@ -117,12 +153,28 @@ create table if not exists public.verification_proofs (
   type proof_type not null,
   proof_url text,
   status verification_status not null default 'pending',
+  source_provider text,
+  external_reference text,
+  verification_payload jsonb not null default '{}'::jsonb,
+  confidence_score numeric(5, 2),
+  is_trade_grade boolean not null default false,
+  verified_at timestamptz,
+  expires_at timestamptz,
   reviewed_by uuid references public.users(id),
   created_at timestamptz not null default now()
 );
 
+alter table public.verification_proofs add column if not exists source_provider text;
+alter table public.verification_proofs add column if not exists external_reference text;
+alter table public.verification_proofs add column if not exists verification_payload jsonb not null default '{}'::jsonb;
+alter table public.verification_proofs add column if not exists confidence_score numeric(5, 2);
+alter table public.verification_proofs add column if not exists is_trade_grade boolean not null default false;
+alter table public.verification_proofs add column if not exists verified_at timestamptz;
+alter table public.verification_proofs add column if not exists expires_at timestamptz;
+
 create index if not exists verification_proofs_user_card_id_idx on public.verification_proofs(user_card_id);
 create index if not exists verification_proofs_status_idx on public.verification_proofs(status);
+create index if not exists verification_proofs_trade_grade_idx on public.verification_proofs(user_card_id, is_trade_grade, status);
 
 create table if not exists public.reputation_events (
   id uuid primary key default gen_random_uuid(),
@@ -149,6 +201,89 @@ drop trigger if exists set_user_cards_updated_at on public.user_cards;
 create trigger set_user_cards_updated_at
 before update on public.user_cards
 for each row execute function public.set_updated_at();
+
+drop trigger if exists set_provider_connections_updated_at on public.provider_connections;
+create trigger set_provider_connections_updated_at
+before update on public.provider_connections
+for each row execute function public.set_updated_at();
+
+create or replace function public.sync_user_card_trade_eligibility()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  target_user_card_id uuid;
+  has_wallet_proof boolean;
+  has_trade_grade_proof boolean;
+  has_pending_proof boolean;
+  latest_proof_url text;
+  latest_source text;
+  latest_reference text;
+begin
+  target_user_card_id := coalesce(new.user_card_id, old.user_card_id);
+
+  select exists (
+    select 1 from public.verification_proofs vp
+    where vp.user_card_id = target_user_card_id
+      and vp.status in ('verified', 'wallet_verified')
+      and vp.is_trade_grade = true
+      and vp.type::text in ('wallet_signature', 'onchain_receipt')
+  ) into has_wallet_proof;
+
+  select exists (
+    select 1 from public.verification_proofs vp
+    where vp.user_card_id = target_user_card_id
+      and vp.status in ('verified', 'wallet_verified')
+      and vp.is_trade_grade = true
+      and vp.type::text in ('platform_connection', 'marketplace_inventory', 'partner_api_attestation', 'wallet_signature', 'onchain_receipt')
+      and (vp.expires_at is null or vp.expires_at > now())
+  ) into has_trade_grade_proof;
+
+  select exists (
+    select 1 from public.verification_proofs vp
+    where vp.user_card_id = target_user_card_id
+      and vp.status = 'pending'
+  ) into has_pending_proof;
+
+  select vp.proof_url, vp.source_provider, vp.external_reference
+  into latest_proof_url, latest_source, latest_reference
+  from public.verification_proofs vp
+  where vp.user_card_id = target_user_card_id
+    and vp.status in ('verified', 'wallet_verified')
+    and vp.is_trade_grade = true
+  order by vp.verified_at desc nulls last, vp.created_at desc
+  limit 1;
+
+  update public.user_cards
+  set
+    trade_eligible = has_trade_grade_proof,
+    verification_status = case
+      when has_wallet_proof then 'wallet_verified'::verification_status
+      when has_trade_grade_proof then 'verified'::verification_status
+      when has_pending_proof then 'pending'::verification_status
+      else 'unverified'::verification_status
+    end,
+    proof_url = latest_proof_url,
+    validation_source_provider = latest_source,
+    validation_external_reference = latest_reference,
+    validation_checked_at = case when has_trade_grade_proof then now() else validation_checked_at end
+  where id = target_user_card_id;
+
+  return coalesce(new, old);
+end;
+$$;
+
+drop trigger if exists sync_user_card_trade_eligibility_insert on public.verification_proofs;
+create trigger sync_user_card_trade_eligibility_insert
+after insert or update on public.verification_proofs
+for each row execute function public.sync_user_card_trade_eligibility();
+
+drop trigger if exists sync_user_card_trade_eligibility_delete on public.verification_proofs;
+create trigger sync_user_card_trade_eligibility_delete
+after delete on public.verification_proofs
+for each row execute function public.sync_user_card_trade_eligibility();
 
 create or replace function public.handle_new_user()
 returns trigger
@@ -189,6 +324,7 @@ alter table public.trades enable row level security;
 alter table public.trade_items enable row level security;
 alter table public.messages enable row level security;
 alter table public.verification_proofs enable row level security;
+alter table public.provider_connections enable row level security;
 alter table public.reputation_events enable row level security;
 
 drop policy if exists "Profiles are readable" on public.users;
@@ -219,6 +355,19 @@ for select using (
 drop policy if exists "Users manage own cards" on public.user_cards;
 create policy "Users manage own cards" on public.user_cards
 for all using (auth.uid() = user_id)
+with check (auth.uid() = user_id);
+
+drop policy if exists "Users read own provider connections" on public.provider_connections;
+create policy "Users read own provider connections" on public.provider_connections
+for select using (auth.uid() = user_id);
+
+drop policy if exists "Users create own provider connections" on public.provider_connections;
+create policy "Users create own provider connections" on public.provider_connections
+for insert with check (auth.uid() = user_id);
+
+drop policy if exists "Users update own provider connections" on public.provider_connections;
+create policy "Users update own provider connections" on public.provider_connections
+for update using (auth.uid() = user_id)
 with check (auth.uid() = user_id);
 
 drop policy if exists "Trade participants read trades" on public.trades;
@@ -289,6 +438,8 @@ for select using (
 drop policy if exists "Users create own verification proofs" on public.verification_proofs;
 create policy "Users create own verification proofs" on public.verification_proofs
 for insert with check (
+  is_trade_grade = false
+  and
   exists (
     select 1 from public.user_cards uc
     where uc.id = user_card_id and uc.user_id = auth.uid()

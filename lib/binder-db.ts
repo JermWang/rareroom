@@ -1,6 +1,7 @@
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { CardStatus, CardType, CollectorCard, VerificationStatus } from "@/lib/data";
 import { StoredCard } from "@/lib/import";
+import { isTradeGradeVerification } from "@/lib/trusted-verification";
 
 type UserCardRow = {
   id: string;
@@ -202,6 +203,7 @@ export async function fetchMarketplaceListings(): Promise<MarketplaceListing[] |
     `
     )
     .eq("status", "for_trade")
+    .in("verification_status", ["verified", "wallet_verified"])
     .order("created_at", { ascending: false })
     .limit(100);
 
@@ -314,6 +316,34 @@ export async function createTrade(opts: {
 
   if (opts.proposerCardIds.length === 0) return { ok: false, reason: "Add at least one card to your offer." };
   if (opts.receiverCardIds.length === 0) return { ok: false, reason: "Select at least one card you want in return." };
+
+  const allCardIds = [...opts.proposerCardIds, ...opts.receiverCardIds];
+  const { data: tradeCards, error: cardError } = await supabase
+    .from("user_cards")
+    .select("id,user_id,status,verification_status")
+    .in("id", allCardIds);
+
+  if (cardError || !tradeCards || tradeCards.length !== allCardIds.length) {
+    return { ok: false, reason: "Could not validate every card in this offer." };
+  }
+
+  const rows = tradeCards as Array<{ id: string; user_id: string; status: CardStatus; verification_status: VerificationStatus }>;
+  const cardsById = new Map(rows.map((row) => [row.id, row]));
+  const invalidProposerCard = opts.proposerCardIds.some((id) => {
+    const row = cardsById.get(id);
+    return !row || row.user_id !== user.id || !isTradeGradeVerification(row.verification_status);
+  });
+  if (invalidProposerCard) {
+    return { ok: false, reason: "Every card you offer must be source-verified or wallet-verified before a trade can be sent." };
+  }
+
+  const invalidReceiverCard = opts.receiverCardIds.some((id) => {
+    const row = cardsById.get(id);
+    return !row || row.user_id !== opts.receiverUserId || row.status !== "for_trade" || !isTradeGradeVerification(row.verification_status);
+  });
+  if (invalidReceiverCard) {
+    return { ok: false, reason: "The requested cards must be listed for trade and backed by trusted source validation." };
+  }
 
   const { data: trade, error: tradeError } = await supabase
     .from("trades")

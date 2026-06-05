@@ -11,7 +11,7 @@ type TradeMessage = {
 const initialMessages: TradeMessage[] = [
   { sender: "System", body: "Trade draft created. Keep negotiation on-platform for protection." },
   { sender: "MiraMint", body: "I can do Blastoise if the Charizard VMAX stays in the offer." },
-  { sender: "You", body: "That works. I added a note for the condition and proof upload." }
+  { sender: "You", body: "That works. I added a note for condition details. Source validation still has to pass." }
 ];
 
 function cx(...parts: Array<string | false | null | undefined>) {
@@ -24,7 +24,7 @@ export function FloatingTradeChat() {
   const [body, setBody] = useState("");
   const [micStream, setMicStream] = useState<MediaStream | null>(null);
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
-  const [mediaStatus, setMediaStatus] = useState("Proof photos, voice notes, and trade updates stay in this thread.");
+  const [mediaStatus, setMediaStatus] = useState("Condition photos, voice notes, and trade updates stay in this thread.");
   const micStreamRef = useRef<MediaStream | null>(null);
   const cameraStreamRef = useRef<MediaStream | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -91,7 +91,7 @@ export function FloatingTradeChat() {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
       setCameraStream(stream);
-      setMediaStatus("Camera connected. Use this for condition checks or proof photos.");
+      setMediaStatus("Camera connected. Use this for condition checks, not ownership validation.");
     } catch {
       setMediaStatus("Camera permission was blocked or is unavailable in this browser.");
     }
@@ -128,7 +128,7 @@ export function FloatingTradeChat() {
           </div>
           <div className="mt-2 flex flex-wrap gap-1.5">
             <span className="rounded-full bg-[var(--sun)] px-2.5 py-1 text-[10px] font-black text-[var(--navy)]">Countered</span>
-            <span className="rounded-full border border-[rgba(23,58,99,0.16)] bg-white px-2.5 py-1 text-[10px] font-black text-[var(--muted)]">Proof pending</span>
+            <span className="rounded-full border border-[rgba(23,58,99,0.16)] bg-white px-2.5 py-1 text-[10px] font-black text-[var(--muted)]">Source pending</span>
           </div>
         </div>
         <div className="flex gap-1.5">
@@ -182,7 +182,7 @@ export function FloatingTradeChat() {
         ) : null}
 
         <div className="flex items-end gap-1.5 rounded-[22px] border border-[rgba(23,58,99,0.16)] bg-white p-1.5">
-          <button aria-label="Attach proof file" className="grid size-10 shrink-0 place-items-center rounded-full text-[var(--muted)] transition hover:bg-[var(--sky-soft)] hover:text-[var(--navy)]">
+          <button aria-label="Attach condition file" className="grid size-10 shrink-0 place-items-center rounded-full text-[var(--muted)] transition hover:bg-[var(--sky-soft)] hover:text-[var(--navy)]">
             <Paperclip size={17} />
           </button>
           <textarea

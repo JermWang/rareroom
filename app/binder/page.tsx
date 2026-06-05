@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Plus, Upload } from "lucide-react";
+import { Link2, Plus } from "lucide-react";
 import { ActivityRail, Button, CardTile, PageShell, SearchBar, SectionHeader, Stat, cx } from "@/components/ui";
 import { CardStatus, CollectorCard, cards, filters, isVerified } from "@/lib/data";
 import { loadImportedAsCards } from "@/lib/import";
@@ -57,12 +57,12 @@ export default function BinderPage() {
         <div className="min-w-0">
           <SectionHeader
             title="My Binder"
-            copy="Mark cards as owned, for trade, wishlist, or locked. Verification status travels with each card."
+            copy="Mark cards as owned, for trade, wishlist, or locked. Trade status requires trusted source validation."
             action={
               <div className="flex gap-2">
-                <Button variant="secondary">
-                  <Upload size={16} />
-                  Upload proof
+                <Button href="/verification" variant="secondary">
+                  <Link2 size={16} />
+                  Connect source
                 </Button>
                 <Button href="/import">
                   <Plus size={16} />

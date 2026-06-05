@@ -1,6 +1,7 @@
 import {
   BadgeCheck,
   Clock,
+  DatabaseZap,
   Flame,
   Gem,
   Heart,
@@ -347,29 +348,29 @@ export const tradeStatuses = ["Draft", "Sent", "Countered", "Accepted", "Verific
 export const filters = ["All Cards", "For Trade", "Wishlist", "Rare", "Recently Added", "Verified"];
 
 export const proofTypes = [
-  { label: "Screenshot verified", detail: "Timestamped collection proof checked against duplicate listings.", icon: BadgeCheck },
-  { label: "Receipt/import verified", detail: "Platform import, receipt, or source account history confirms ownership.", icon: ShieldCheck },
-  { label: "Wallet signature proof", detail: "Optional proof receipt created with a wallet signature.", icon: Zap },
-  { label: "Manual review queue", detail: "Admin review for suspicious cards, disputes, and high-value trades.", icon: Clock }
+  { label: "Provider inventory verified", detail: "A connected platform account confirms the card exists in the collector's inventory.", icon: DatabaseZap },
+  { label: "Partner API attestation", detail: "A trusted source confirms account ownership through an API or signed export.", icon: ShieldCheck },
+  { label: "Wallet / onchain validation", detail: "A server-verified wallet signature or onchain receipt backs the digital card.", icon: Zap },
+  { label: "Trade blocklist", detail: "Screenshots, manual entry, and metadata-only matches never approve a trade by themselves.", icon: Clock }
 ];
 
 export const featureCards = [
-  { title: "Verified Binders", copy: "Every collector gets a public binder with ownership status, trade availability, and proof badges.", icon: ShieldCheck },
+  { title: "Verified Binders", copy: "Every collector gets a public binder with ownership status, trade availability, and source badges.", icon: ShieldCheck },
   { title: "Smart Swap Builder", copy: "Build clean card-for-card or bundle trades with fairness indicators and wishlist matching.", icon: Sparkles },
   { title: "Reputation That Matters", copy: "Completed trades, verified cards, and dispute history help collectors know who to trust.", icon: Star },
-  { title: "Optional Web3 Proof", copy: "Connect a wallet to sign ownership or create transparent trade receipts. Totally optional.", icon: Gem }
+  { title: "Optional Web3 Validation", copy: "Connect a wallet to sign account control or attach transparent trade receipts. Totally optional.", icon: Gem }
 ];
 
 export const adminQueue = [
   { id: "q1", title: "Duplicate listing match", user: "MiraMint", severity: "Medium", status: "Needs review" },
-  { id: "q2", title: "High-value proof upload", user: "HoloHana", severity: "High", status: "Pending admin" },
+  { id: "q2", title: "High-value source validation", user: "HoloHana", severity: "High", status: "Pending admin" },
   { id: "q3", title: "Off-platform chat warning", user: "KantoKei", severity: "Low", status: "Logged" }
 ];
 
 export const reputationEvents = [
   { type: "Trade completed", points: "+8", reason: "Balanced swap approved by both users" },
-  { type: "Verified card", points: "+3", reason: "Screenshot proof accepted" },
-  { type: "Dispute resolved", points: "+2", reason: "Proof supplied within cooldown" }
+  { type: "Verified card", points: "+3", reason: "Trusted provider validation accepted" },
+  { type: "Dispute resolved", points: "+2", reason: "Trusted source supplied within cooldown" }
 ];
 
 export const statusCopy: Record<CardStatus, string> = {
@@ -387,7 +388,7 @@ export function isVerified(status: VerificationStatus): boolean {
 export const verificationCopy: Record<VerificationStatus, string> = {
   unverified: "Unverified",
   pending: "Pending",
-  verified: "Verified owner",
+  verified: "Source verified",
   wallet_verified: "Wallet verified",
   disputed: "Disputed"
 };

@@ -10,7 +10,7 @@ export default function AdminPage() {
         <div className="mb-6 grid gap-3 sm:grid-cols-4">
           <Stat label="Users" value="2,481" />
           <Stat label="Open disputes" value="12" />
-          <Stat label="Proof reviews" value="37" tone="accent" />
+          <Stat label="Source checks" value="37" tone="accent" />
           <Stat label="Trades today" value="84" />
         </div>
         <div className="grid gap-5 lg:grid-cols-[1fr_340px]">
@@ -41,7 +41,7 @@ export default function AdminPage() {
               <div key={label} className="glass rounded-2xl p-5">
                 <Icon className="text-volt" size={24} />
                 <h2 className="mt-3 font-black text-white">{label}</h2>
-                <p className="mt-1 text-sm leading-6 text-white/50">Operational shell ready to connect to Supabase tables, storage proof files, and admin policies.</p>
+                <p className="mt-1 text-sm leading-6 text-white/50">Operational shell ready to connect provider attestations, trade-grade proof records, and admin policies.</p>
                 <Button variant="secondary" className="mt-4 w-full">
                   Open
                 </Button>

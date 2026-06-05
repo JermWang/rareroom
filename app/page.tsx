@@ -25,8 +25,8 @@ const partnerBrands = [
 
 const trustLines = [
   { title: "Email-first accounts", copy: "Collectors can browse, import, and build a binder without a wallet." },
-  { title: "Optional Web3 proof", copy: "Wallet signatures and onchain receipts stay available for higher-value swaps." },
-  { title: "Public trade context", copy: "For-trade cards, wishlists, proof status, and reputation sit in one profile." }
+  { title: "Optional Web3 validation", copy: "Wallet signatures and onchain receipts stay available for higher-value swaps." },
+  { title: "Public trade context", copy: "For-trade cards, wishlists, source status, and reputation sit in one profile." }
 ];
 
 export default function LandingPage() {
@@ -48,7 +48,7 @@ export default function LandingPage() {
               </h1>
               <h2>Verified binders. Cleaner trades.</h2>
               <p className="strategy-lede">
-                Import your collection, prove the cards that matter, and trade with collectors who show real ownership before anyone commits.
+                Import your collection, validate cards through trusted sources, and trade with collectors who show real ownership before anyone commits.
               </p>
               <div className="strategy-actions">
                 <Link href="/auth" className="landing-btn landing-btn-primary">
@@ -63,7 +63,7 @@ export default function LandingPage() {
               <div className="strategy-flow" aria-label="RareRoom trade flow">
                 <span>Cards imported</span>
                 <ArrowRight size={16} />
-                <span>Proof attached</span>
+                <span>Source validated</span>
                 <ArrowRight size={16} />
                 <span>Collectors matched</span>
               </div>
@@ -112,7 +112,7 @@ export default function LandingPage() {
 
         <section className="trust-section">
           <div className="landing-wrap trust-grid">
-            <SectionIntro title="Trust signals without the clutter" copy="Profiles stay readable. Proof, availability, and history are visible where collectors actually make decisions." />
+            <SectionIntro title="Trust signals without the clutter" copy="Profiles stay readable. Source status, availability, and history are visible where collectors actually make decisions." />
             <div className="trust-lines">
               {trustLines.map((line, index) => (
                 <div key={line.title} className="trust-line">
@@ -131,7 +131,7 @@ export default function LandingPage() {
           <div className="landing-wrap landing-final-inner">
             <div className="landing-final-badge">Free to join</div>
             <h2>Open your binder.</h2>
-            <p>Add cards today. Bring proof when a trade needs it.</p>
+            <p>Add cards today. Connect trusted validation when a trade needs it.</p>
             <Link href="/auth" className="landing-btn landing-btn-primary">
               Start your binder
               <ArrowRight size={19} />
@@ -146,11 +146,9 @@ export default function LandingPage() {
 
 function LandingNav() {
   const nav = [
-    { href: "/swap", label: "Swap" },
+    { href: "/marketplace", label: "Swap Hub" },
     { href: "/binder", label: "Binder" },
-    { href: "/import", label: "Import" },
-    { href: "/marketplace", label: "Marketplace" },
-    { href: "/verification", label: "Verify" }
+    { href: "/import", label: "Import" }
   ];
 
 
@@ -161,7 +159,7 @@ function LandingNav() {
       </Link>
       <nav aria-label="Primary navigation">
         {nav.map((item) => (
-          <Link key={item.href} href={item.href} className={item.href === "/swap" ? "nav-swap" : undefined}>
+          <Link key={item.href} href={item.href} className={item.href === "/marketplace" ? "nav-swap" : undefined}>
             {item.label}
           </Link>
         ))}

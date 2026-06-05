@@ -104,7 +104,7 @@ export default function AuthPage() {
 
             <Button variant="secondary" href="/profile">
               <ShieldCheck size={16} />
-              Connect wallet for proof later
+              Connect wallet later
             </Button>
             <p className="rounded-lg border border-[var(--line)] bg-[var(--sky-soft)] p-3 text-sm leading-6 text-[var(--navy)]">{status}</p>
           </div>

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { ArrowRightLeft, CheckCircle2, Maximize2, MessageSquare, Plus, RefreshCw, ShieldCheck, X } from "lucide-react";
-import { Button, CardArt, SectionHeader, cx } from "@/components/ui";
+import { Button, CardArt, cx } from "@/components/ui";
 import { CollectorCard, tradeStatuses } from "@/lib/data";
 import { createTrade, fetchSingleUserCard, fetchUserBinderCards } from "@/lib/binder-db";
 import { sanitizeProofUrl } from "@/lib/proof-url";
@@ -88,18 +88,7 @@ export function SwapBuilder({ requestedCardId }: { requestedCardId?: string | nu
 
   return (
     <div>
-      <SectionHeader
-        title="Build a Swap"
-        copy="Pick only source-verified or wallet-verified cards, compare value, and keep chat close while the offer comes together."
-        action={
-          <Button onClick={openTradeChat} variant="secondary" className="min-h-10 px-4 text-xs">
-            <MessageSquare size={16} />
-            Trade chat
-          </Button>
-        }
-      />
-
-      <div className="mb-6 flex gap-2 overflow-x-auto border-y border-[rgba(23,58,99,0.14)] py-3">
+      <div className="mb-6 flex items-center gap-2 overflow-x-auto pb-1">
         {tradeStatuses.map((item) => (
           <button
             key={item}

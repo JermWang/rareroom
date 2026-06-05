@@ -415,7 +415,9 @@ export function CardTile({ card, compact = false, onStatusChange }: { card: Coll
         ) : null}
       </div>
       <div className="rr-card-body">
-        <div className={cx("rr-card-kicker truncate", rarityAccentClass(card.rarity))}>{card.rarity}</div>
+        {!card.imported ? (
+          <div className={cx("rr-card-kicker truncate", rarityAccentClass(card.rarity))}>{card.rarity}</div>
+        ) : null}
         <div className="mt-1 flex items-baseline justify-between gap-2.5">
           <h3 className="rr-card-title min-w-0 flex-1 truncate">{card.name}</h3>
           <span className="rr-card-value shrink-0">{card.estimatedValue}</span>

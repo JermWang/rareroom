@@ -97,13 +97,6 @@ export default function BinderPage() {
                 </button>
               ))}
             </div>
-            <div className="mt-3 grid gap-3 sm:grid-cols-3">
-              {["Generation", "Set", "Type", "Rarity", "Condition", "Language", "Holo / Reverse / Promo", "Verified only"].map((filter) => (
-                <select key={filter} className="min-h-10 rounded-lg border-2 border-[var(--line)] bg-white px-3 text-xs font-bold text-[var(--muted)] outline-none focus:border-[var(--sky)]">
-                  <option>{filter}</option>
-                </select>
-              ))}
-            </div>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {visibleCards.map((card) => (

@@ -206,17 +206,7 @@ h3 {
 
 .rr-card-shell,
 .rr-listing-card {
-  border-radius: 20px;
-}
-
-.rr-card-shell::before,
-.rr-listing-card::before {
-  content: "";
-  position: absolute;
-  inset: 0 0 auto;
-  height: 3px;
-  background: linear-gradient(90deg, var(--sky), var(--mint), var(--sun));
-  opacity: 0.78;
+  border-radius: 18px;
 }
 
 .rr-card-shell {

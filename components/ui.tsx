@@ -233,7 +233,7 @@ function HeaderAuth() {
 
   return (
     <div className="flex items-center gap-2">
-      <Button href="/auth" variant="primary" className="hidden min-h-10 px-4 text-sm sm:inline-flex">
+      <Button href="/auth" variant="primary" className="hidden min-h-9 px-3.5 text-xs sm:inline-flex">
         <PokeballIcon size={18} />
         Start Your Binder
       </Button>

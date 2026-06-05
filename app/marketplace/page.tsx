@@ -84,7 +84,7 @@ function SwapHubPage() {
           title="Swap Hub"
           copy="Browse live trade listings, build an offer, and track requests from one clean workspace."
           action={
-            <Button href="/marketplace?tab=build" className="min-h-11 px-5 text-sm">
+            <Button href="/marketplace?tab=build" className="min-h-10 px-4 text-xs">
               <Handshake size={16} />
               Build swap
             </Button>
@@ -204,7 +204,7 @@ function RequestsTab() {
         title="Trade Requests"
         copy="Incoming offers, counters, and sent proposals stay in a short action list instead of another inbox."
         action={
-          <Button onClick={openTradeChat} variant="secondary" className="min-h-11 px-5 text-sm">
+          <Button onClick={openTradeChat} variant="secondary" className="min-h-10 px-4 text-xs">
             <MessageSquare size={16} />
             Trade chat
           </Button>
@@ -219,7 +219,7 @@ function RequestsTab() {
               <p className="text-sm font-bold text-[var(--muted)]">With {row.collector}</p>
             </div>
             <span className="text-sm font-black text-[var(--sun-deep)]">{row.value}</span>
-            <Button href="/marketplace?tab=build" variant="secondary" className="min-h-10 px-4 text-xs">
+            <Button href="/marketplace?tab=build" variant="secondary" className="min-h-9 px-3 text-xs">
               Review
             </Button>
           </div>
@@ -280,7 +280,7 @@ function ListingCard({ card }: { card: CollectorCard }) {
         </div>
       </div>
 
-      <Button href={`/marketplace?tab=build&card=${card.id}`} className="mt-3 h-10 w-full text-xs">
+      <Button href={`/marketplace?tab=build&card=${card.id}`} className="mt-3 h-9 w-full text-xs">
         Build offer
       </Button>
     </div>

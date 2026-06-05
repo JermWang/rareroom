@@ -111,7 +111,7 @@ export function WalletLink() {
             <button
               onClick={() => link("solana")}
               disabled={busy !== null}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-black text-white shadow-sm transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-xs font-black text-white shadow-sm transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
               style={{ background: "#ab9ff2" }}
             >
               {busy === "solana" ? <Loader2 size={16} className="animate-spin" /> : <Wallet size={16} />}
@@ -120,7 +120,7 @@ export function WalletLink() {
             <button
               onClick={() => link("evm")}
               disabled={busy !== null}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-black text-white shadow-sm transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-xs font-black text-white shadow-sm transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
               style={{ background: "#f6851b" }}
             >
               {busy === "evm" ? <Loader2 size={16} className="animate-spin" /> : <Wallet size={16} />}

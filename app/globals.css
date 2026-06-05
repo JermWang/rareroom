@@ -436,15 +436,15 @@ h3 {
 .rr-btn {
   position: relative;
   display: inline-flex;
-  min-height: 52px;
+  min-height: 40px;
   align-items: center;
   justify-content: center;
-  gap: 9px;
+  gap: 7px;
   border-radius: 999px;
-  border: 2.5px solid var(--navy);
-  padding: 0 24px;
+  border: 1.5px solid var(--navy);
+  padding: 0 17px;
   font-family: var(--font-display);
-  font-size: 16px;
+  font-size: 13px;
   font-weight: 700;
   line-height: 1;
   white-space: nowrap;
@@ -454,13 +454,13 @@ h3 {
 .rr-btn-primary {
   background: var(--accent);
   color: var(--accent-ink);
-  box-shadow: 0 5px 0 var(--navy), 0 14px 22px -10px rgba(23, 58, 99, 0.5);
+  box-shadow: 0 3px 0 var(--navy), 0 12px 18px -12px rgba(23, 58, 99, 0.42);
 }
 
 .rr-btn-secondary {
   background: var(--card);
   color: var(--navy);
-  box-shadow: 0 5px 0 rgba(23, 58, 99, 0.18), 0 12px 22px -14px rgba(23, 58, 99, 0.4);
+  box-shadow: 0 3px 0 rgba(23, 58, 99, 0.16), 0 10px 18px -14px rgba(23, 58, 99, 0.34);
 }
 
 .rr-btn-ghost {
@@ -474,12 +474,12 @@ h3 {
 }
 
 .rr-btn-primary:hover {
-  box-shadow: 0 7px 0 var(--navy), 0 18px 28px -10px rgba(23, 58, 99, 0.55);
+  box-shadow: 0 4px 0 var(--navy), 0 14px 22px -12px rgba(23, 58, 99, 0.48);
 }
 
 .rr-btn:active {
-  transform: translateY(3px);
-  box-shadow: 0 2px 0 var(--navy), 0 8px 16px -10px rgba(23, 58, 99, 0.5);
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--navy), 0 8px 14px -12px rgba(23, 58, 99, 0.42);
 }
 
 .rr-chip {
@@ -953,13 +953,13 @@ h3 {
 
 .landing-btn {
   display: inline-flex;
-  min-height: 52px;
+  min-height: 42px;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
   border-radius: 999px;
-  padding: 0 24px;
-  font-size: 15px;
+  padding: 0 18px;
+  font-size: 13px;
   font-weight: 950;
   letter-spacing: 0.01em;
   transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;

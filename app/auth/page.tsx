@@ -72,7 +72,7 @@ export default function AuthPage() {
             <button
               onClick={signInWithDiscord}
               disabled={busy}
-              className="inline-flex min-h-12 items-center justify-center gap-2.5 rounded-lg px-4 py-2 text-sm font-black text-white shadow-sm transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-xs font-black text-white shadow-sm transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
               style={{ background: "#5865F2" }}
             >
               <DiscordIcon size={19} />
@@ -99,7 +99,7 @@ export default function AuthPage() {
             <button
               onClick={signInWithEmail}
               disabled={busy}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[var(--sun)] px-4 py-2 text-sm font-black text-[var(--navy)] shadow-sm transition hover:bg-[var(--sun-deep)] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-[var(--sun)] px-3.5 py-2 text-xs font-black text-[var(--navy)] shadow-sm transition hover:bg-[var(--sun-deep)] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
             >
               <Sparkles size={16} />
               Send magic link

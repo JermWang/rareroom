@@ -92,7 +92,7 @@ export function SwapBuilder({ requestedCardId }: { requestedCardId?: string | nu
         title="Build a Swap"
         copy="Pick only source-verified or wallet-verified cards, compare value, and keep chat close while the offer comes together."
         action={
-          <Button onClick={openTradeChat} variant="secondary" className="min-h-11 px-5 text-sm">
+          <Button onClick={openTradeChat} variant="secondary" className="min-h-10 px-4 text-xs">
             <MessageSquare size={16} />
             Trade chat
           </Button>
@@ -139,7 +139,7 @@ export function SwapBuilder({ requestedCardId }: { requestedCardId?: string | nu
             ))}
             {myCards.length === 0 && <p className="py-4 text-center text-sm text-[var(--muted)]">No cards marked for trade in your binder.</p>}
           </div>
-          <button className="mt-4 flex min-h-12 w-full items-center justify-center gap-2 rounded-full border border-dashed border-[rgba(23,58,99,0.28)] bg-white/48 text-sm font-black text-[var(--muted)] transition hover:border-[var(--sun-deep)] hover:text-[var(--sun-deep)]">
+          <button className="mt-4 flex min-h-10 w-full items-center justify-center gap-2 rounded-full border border-dashed border-[rgba(23,58,99,0.24)] bg-white/48 text-xs font-black text-[var(--muted)] transition hover:border-[var(--sun-deep)] hover:text-[var(--sun-deep)]">
             <Plus size={16} />
             Add my card
           </button>
@@ -175,7 +175,7 @@ export function SwapBuilder({ requestedCardId }: { requestedCardId?: string | nu
             </div>
           )}
           <div className="mt-4 grid gap-2">
-            <button onClick={sendTrade} disabled={sending} className="rr-btn rr-btn-primary min-h-12 w-full px-4 text-sm disabled:opacity-60">
+            <button onClick={sendTrade} disabled={sending} className="rr-btn rr-btn-primary min-h-10 w-full px-4 text-xs disabled:opacity-60">
               <CheckCircle2 size={16} />
               {sending ? "Sending..." : "Send trade"}
             </button>

@@ -144,7 +144,7 @@ export function FloatingTradeChat() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="fixed bottom-[86px] right-4 z-[60] inline-flex min-h-14 items-center gap-3 rounded-full border-2 border-[var(--navy)] bg-[var(--sun)] px-5 font-display text-sm font-black text-[var(--navy)] shadow-[0_7px_0_var(--navy),0_18px_32px_-18px_rgba(23,58,99,0.65)] transition hover:-translate-y-1 md:bottom-6 md:right-6"
+        className="fixed bottom-[86px] right-4 z-[60] inline-flex min-h-11 items-center gap-2 rounded-full border-[1.5px] border-[var(--navy)] bg-[var(--sun)] px-4 font-display text-xs font-black text-[var(--navy)] shadow-[0_4px_0_var(--navy),0_14px_24px_-18px_rgba(23,58,99,0.58)] transition hover:-translate-y-0.5 md:bottom-6 md:right-6"
         aria-label="Open trade chat"
       >
         <MessageSquare size={19} />

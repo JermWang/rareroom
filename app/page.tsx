@@ -129,7 +129,6 @@ export default function LandingPage() {
 
         <section className="landing-final">
           <div className="landing-wrap landing-final-inner">
-            <div className="landing-final-badge">Free to join</div>
             <h2>Open your binder.</h2>
             <p>Add cards today. Connect trusted validation when a trade needs it.</p>
             <Link href="/auth" className="landing-btn landing-btn-primary">

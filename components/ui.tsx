@@ -352,40 +352,30 @@ export function CardArt({ card, large = false }: { card: CollectorCard; large?: 
   );
 }
 
+// Quiet inline status — muted text + a distinguishing icon (no pill chrome).
 export function StatusBadge({ status }: { status: CollectorCard["status"] }) {
   const Icon = statusIcons[status];
-  const tone = {
-    owned: "border-[rgba(54,171,232,0.32)] bg-[var(--sky-soft)] text-[var(--sky-deep)]",
-    for_trade: "border-[rgba(247,161,43,0.4)] bg-[#fff4d6] text-[var(--sun-deep)]",
-    wishlist: "border-[rgba(238,77,77,0.3)] bg-[#fdeaea] text-[var(--red)]",
-    locked: "border-[rgba(23,58,99,0.16)] bg-[rgba(23,58,99,0.05)] text-[var(--muted)]"
-  }[status];
-
   return (
-    <span
-      className={cx(
-        "inline-flex items-center gap-1 rounded-full border px-2 py-[3px] text-[10px] font-black uppercase tracking-[0.04em]",
-        tone
-      )}
-    >
-      <Icon size={11} strokeWidth={2.4} />
+    <span className="inline-flex items-center gap-1.5 text-[11.5px] font-bold text-[var(--muted)]">
+      <Icon size={12} strokeWidth={2.4} />
       {statusCopy[status]}
     </span>
   );
 }
 
+// Quiet inline verification — color-coded trust signal (no pill chrome).
 export function VerificationBadge({ status }: { status: CollectorCard["verificationStatus"] }) {
   const map = {
-    unverified: { cls: "border-[rgba(23,58,99,0.16)] bg-[rgba(23,58,99,0.05)] text-[var(--muted)]", Icon: ShieldCheck },
-    pending: { cls: "border-[rgba(247,161,43,0.4)] bg-[#fff4d6] text-[var(--sun-deep)]", Icon: Clock },
-    verified: { cls: "border-[rgba(25,195,154,0.4)] bg-[#d9f7ee] text-[#0f9e78]", Icon: BadgeCheck },
-    wallet_verified: { cls: "border-[rgba(124,58,237,0.32)] bg-[#efe9fe] text-[#7c3aed]", Icon: ShieldCheck },
-    disputed: { cls: "border-[rgba(238,77,77,0.3)] bg-[#fdeaea] text-[var(--red)]", Icon: TriangleAlert }
+    unverified: { color: "text-[var(--muted)]", Icon: ShieldCheck },
+    pending: { color: "text-[var(--sun-deep)]", Icon: Clock },
+    verified: { color: "text-[#0f9e78]", Icon: BadgeCheck },
+    wallet_verified: { color: "text-[#7c3aed]", Icon: ShieldCheck },
+    disputed: { color: "text-[var(--red)]", Icon: TriangleAlert }
   }[status];
   const Icon = map.Icon;
   return (
-    <span className={cx("inline-flex items-center gap-1 rounded-full border px-2 py-[3px] text-[10px] font-black uppercase tracking-[0.04em]", map.cls)}>
-      <Icon size={11} strokeWidth={2.4} />
+    <span className={cx("inline-flex items-center gap-1.5 text-[11.5px] font-bold", map.color)}>
+      <Icon size={13} strokeWidth={2.4} />
       {verificationCopy[status]}
     </span>
   );
@@ -400,34 +390,6 @@ function rarityAccentClass(rarity: string): string {
   if (/rare/.test(r)) return "text-[var(--sky-deep)]";
   if (/uncommon/.test(r)) return "text-[#0f9e78]";
   return "text-[var(--muted)]";
-}
-
-// Quiet, inline trust + status signals for card tiles (no pill chrome).
-function CardTrust({ status }: { status: CollectorCard["verificationStatus"] }) {
-  const map = {
-    unverified: { Icon: ShieldCheck, color: "text-[var(--muted)]" },
-    pending: { Icon: Clock, color: "text-[var(--sun-deep)]" },
-    verified: { Icon: BadgeCheck, color: "text-[#0f9e78]" },
-    wallet_verified: { Icon: ShieldCheck, color: "text-[#7c3aed]" },
-    disputed: { Icon: TriangleAlert, color: "text-[var(--red)]" }
-  }[status];
-  const Icon = map.Icon;
-  return (
-    <span className={cx("inline-flex items-center gap-1.5 text-[11.5px] font-bold", map.color)}>
-      <Icon size={13} strokeWidth={2.4} />
-      {verificationCopy[status]}
-    </span>
-  );
-}
-
-function CardStatusText({ status }: { status: CollectorCard["status"] }) {
-  const Icon = statusIcons[status];
-  return (
-    <span className="inline-flex items-center gap-1.5 text-[11.5px] font-bold text-[var(--muted)]">
-      <Icon size={12} strokeWidth={2.4} />
-      {statusCopy[status]}
-    </span>
-  );
 }
 
 export function CardTile({ card, compact = false, onStatusChange }: { card: CollectorCard; compact?: boolean; onStatusChange?: (status: CollectorCard["status"]) => void }) {
@@ -459,7 +421,7 @@ export function CardTile({ card, compact = false, onStatusChange }: { card: Coll
         </div>
         {!compact ? (
           <div className="mt-3 flex items-center justify-between gap-2">
-            <CardTrust status={card.verificationStatus} />
+            <VerificationBadge status={card.verificationStatus} />
             {onStatusChange ? (
               <select
                 value={card.status}
@@ -473,7 +435,7 @@ export function CardTile({ card, compact = false, onStatusChange }: { card: Coll
                 <option value="locked">Locked</option>
               </select>
             ) : (
-              <CardStatusText status={card.status} />
+              <StatusBadge status={card.status} />
             )}
           </div>
         ) : null}

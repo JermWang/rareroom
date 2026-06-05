@@ -265,11 +265,15 @@ function TradeCardRow({
         </span>
       </button>
       <div className="min-w-0">
-        <div className="rr-card-kicker truncate">{card.rarity}</div>
-        <h3 className="rr-card-title mt-1 truncate">{card.name}</h3>
-        <p className="rr-card-subtitle mt-0.5 truncate">{card.setName}</p>
-        <p className="mt-2 truncate text-[10px] font-black uppercase tracking-[0.06em] text-[var(--sky-deep)]">
-          <ProofLink card={card}>{proofLabel}</ProofLink> <span className="text-[rgba(23,58,99,0.28)]">/</span> {card.condition}
+        <h3 className="rr-card-title truncate">{card.name}</h3>
+        <p className="rr-card-subtitle mt-0.5 truncate">
+          {card.setName} · {card.rarity}
+        </p>
+        <p className="mt-1.5 truncate text-[11px] font-bold text-[var(--muted)]">
+          <ProofLink card={card} className="text-[var(--sky-deep)]">
+            {proofLabel}
+          </ProofLink>{" "}
+          · {card.condition}
         </p>
       </div>
       <div className="grid justify-items-end gap-2">

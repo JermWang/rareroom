@@ -37,9 +37,9 @@ export default async function CardDetailPage({ params }: { params: Promise<{ id:
         </div>
         <div>
           <SectionHeader title={card.name} copy={`${card.setName} · ${card.rarity} · Estimated ${card.estimatedValue}`} />
-          <div className="mb-5 flex flex-wrap gap-2">
-            <StatusBadge status={card.status} />
+          <div className="mb-5 flex flex-wrap items-center gap-4">
             <VerificationBadge status={card.verificationStatus} />
+            <StatusBadge status={card.status} />
           </div>
           <div className="grid gap-4 md:grid-cols-2">
             <div className="rr-panel-soft rounded-2xl p-5">

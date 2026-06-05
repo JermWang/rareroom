@@ -276,10 +276,9 @@ function ListingCard({ card }: { card: CollectorCard }) {
 
       <div className="mt-3 flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="rr-card-kicker truncate">{card.rarity}</div>
-          <h3 className="rr-card-title mt-1 truncate">{card.name}</h3>
-          <p className="rr-card-subtitle mt-1 truncate">
-            {card.setName} / {card.cardNumber}
+          <h3 className="rr-card-title truncate">{card.name}</h3>
+          <p className="rr-card-subtitle mt-0.5 truncate">
+            {card.setName} · {card.cardNumber} · {card.rarity}
           </p>
         </div>
         <span className="rr-card-value shrink-0">{card.estimatedValue}</span>

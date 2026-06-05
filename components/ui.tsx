@@ -8,12 +8,15 @@ import {
   BadgeCheck,
   Bell,
   CircleUserRound,
+  Clock,
   LayoutDashboard,
   LogOut,
   Search,
+  ShieldCheck,
   SlidersHorizontal,
   Sparkles,
   Store,
+  TriangleAlert,
   UploadCloud,
   Wrench
 } from "lucide-react";
@@ -352,34 +355,51 @@ export function CardArt({ card, large = false }: { card: CollectorCard; large?: 
 export function StatusBadge({ status }: { status: CollectorCard["status"] }) {
   const Icon = statusIcons[status];
   const tone = {
-    owned: "text-[var(--sky-deep)]",
-    for_trade: "text-[var(--navy)]",
-    wishlist: "text-[var(--red)]",
-    locked: "text-[var(--muted)]"
+    owned: "border-[rgba(54,171,232,0.32)] bg-[var(--sky-soft)] text-[var(--sky-deep)]",
+    for_trade: "border-[rgba(247,161,43,0.4)] bg-[#fff4d6] text-[var(--sun-deep)]",
+    wishlist: "border-[rgba(238,77,77,0.3)] bg-[#fdeaea] text-[var(--red)]",
+    locked: "border-[rgba(23,58,99,0.16)] bg-[rgba(23,58,99,0.05)] text-[var(--muted)]"
   }[status];
 
   return (
-    <span className={cx("inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.08em]", tone)}>
-      <Icon size={11} strokeWidth={2.2} />
+    <span
+      className={cx(
+        "inline-flex items-center gap-1 rounded-full border px-2 py-[3px] text-[10px] font-black uppercase tracking-[0.04em]",
+        tone
+      )}
+    >
+      <Icon size={11} strokeWidth={2.4} />
       {statusCopy[status]}
     </span>
   );
 }
 
 export function VerificationBadge({ status }: { status: CollectorCard["verificationStatus"] }) {
-  const tone = {
-    unverified: { text: "text-[var(--muted)]", dot: "bg-[var(--muted)]" },
-    pending: { text: "text-[var(--sun-deep)]", dot: "bg-[var(--sun-deep)]" },
-    verified: { text: "text-[var(--mint)]", dot: "bg-[var(--mint)]" },
-    wallet_verified: { text: "text-[#7c3aed]", dot: "bg-[#7c3aed]" },
-    disputed: { text: "text-[var(--red)]", dot: "bg-[var(--red)]" }
+  const map = {
+    unverified: { cls: "border-[rgba(23,58,99,0.16)] bg-[rgba(23,58,99,0.05)] text-[var(--muted)]", Icon: ShieldCheck },
+    pending: { cls: "border-[rgba(247,161,43,0.4)] bg-[#fff4d6] text-[var(--sun-deep)]", Icon: Clock },
+    verified: { cls: "border-[rgba(25,195,154,0.4)] bg-[#d9f7ee] text-[#0f9e78]", Icon: BadgeCheck },
+    wallet_verified: { cls: "border-[rgba(124,58,237,0.32)] bg-[#efe9fe] text-[#7c3aed]", Icon: ShieldCheck },
+    disputed: { cls: "border-[rgba(238,77,77,0.3)] bg-[#fdeaea] text-[var(--red)]", Icon: TriangleAlert }
   }[status];
+  const Icon = map.Icon;
   return (
-    <span className={cx("inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.08em]", tone.text)}>
-      <span className={cx("size-1.5 rounded-full", tone.dot)} />
+    <span className={cx("inline-flex items-center gap-1 rounded-full border px-2 py-[3px] text-[10px] font-black uppercase tracking-[0.04em]", map.cls)}>
+      <Icon size={11} strokeWidth={2.4} />
       {verificationCopy[status]}
     </span>
   );
+}
+
+// Tint the rarity label by collector tier for a more official, premium read.
+function rarityAccentClass(rarity: string): string {
+  const r = rarity.toLowerCase();
+  if (/secret|rainbow|crown|alt art|special|gold|shiny/.test(r)) return "text-[#7c3aed]";
+  if (/ultra|vmax|vstar|\bex\b|\bgx\b|full art|legendary/.test(r)) return "text-[var(--sun-deep)]";
+  if (/holo/.test(r)) return "text-[var(--sky-deep)]";
+  if (/rare/.test(r)) return "text-[var(--sky-deep)]";
+  if (/uncommon/.test(r)) return "text-[#0f9e78]";
+  return "text-[var(--muted)]";
 }
 
 export function CardTile({ card, compact = false, onStatusChange }: { card: CollectorCard; compact?: boolean; onStatusChange?: (status: CollectorCard["status"]) => void }) {
@@ -395,16 +415,14 @@ export function CardTile({ card, compact = false, onStatusChange }: { card: Coll
         ) : null}
       </div>
       <div className="rr-card-body">
-        <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0">
-            <div className="rr-card-kicker truncate">{card.rarity}</div>
-            <h3 className="rr-card-title mt-1 truncate">{card.name}</h3>
-            <p className="rr-card-subtitle mt-1 truncate">
-              {card.setName} / {card.cardNumber}
-            </p>
-          </div>
+        <div className={cx("rr-card-kicker truncate", rarityAccentClass(card.rarity))}>{card.rarity}</div>
+        <div className="mt-1 flex items-baseline justify-between gap-2.5">
+          <h3 className="rr-card-title min-w-0 flex-1 truncate">{card.name}</h3>
           <span className="rr-card-value shrink-0">{card.estimatedValue}</span>
         </div>
+        <p className="rr-card-subtitle mt-0.5 truncate">
+          {card.setName} · {card.cardNumber}
+        </p>
         {!compact ? (
           <div className="rr-card-meta-line">
             {onStatusChange ? (

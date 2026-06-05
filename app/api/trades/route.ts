@@ -3,6 +3,7 @@ import type { CardStatus, VerificationStatus } from "@/lib/data";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { isTradeGradeVerification } from "@/lib/trusted-verification";
+import { rateLimit, rateLimitKey } from "@/lib/rate-limit";
 
 type CreateTradeBody = {
   proposerCardIds?: string[];
@@ -45,6 +46,10 @@ export async function POST(req: NextRequest) {
   }
   if (body.receiverUserId === user.id) {
     return NextResponse.json({ error: "Choose another collector for this trade." }, { status: 400 });
+  }
+
+  if (!(await rateLimit(rateLimitKey(req, "trades", user.id), 12, 60))) {
+    return NextResponse.json({ error: "Too many trade attempts. Please wait a moment." }, { status: 429 });
   }
 
   const allCardIds = [...proposerCardIds, ...receiverCardIds];
@@ -92,39 +97,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Requested cards must be listed for trade and backed by trusted source validation." }, { status: 400 });
   }
 
-  const { data: trade, error: tradeError } = await admin
-    .from("trades")
-    .insert({
-      proposer_id: user.id,
-      receiver_id: body.receiverUserId,
-      status: "sent"
-    })
-    .select("id")
-    .single();
-
-  if (tradeError || !trade) {
-    return NextResponse.json({ error: tradeError?.message ?? "Failed to create trade." }, { status: 400 });
-  }
-
-  const items = [
-    ...proposerCardIds.map((id) => ({ trade_id: trade.id, user_card_id: id, side: "proposer" })),
-    ...receiverCardIds.map((id) => ({ trade_id: trade.id, user_card_id: id, side: "receiver" }))
-  ];
-
-  const { error: itemsError } = await admin.from("trade_items").insert(items);
-  if (itemsError) {
-    await admin.from("trades").delete().eq("id", trade.id);
-    return NextResponse.json({ error: itemsError.message }, { status: 400 });
-  }
-
+  // Create the trade, its items, and the optional note atomically (single
+  // transaction inside the RPC), with ownership/eligibility re-checked there.
   const note = typeof body.note === "string" ? body.note.trim().slice(0, 4000) : "";
-  if (note) {
-    await admin.from("messages").insert({
-      trade_id: trade.id,
-      sender_id: user.id,
-      body: note
-    });
+  const { data: tradeId, error: rpcError } = await admin.rpc("create_trade_atomic", {
+    p_proposer_id: user.id,
+    p_receiver_id: body.receiverUserId,
+    p_proposer_card_ids: proposerCardIds,
+    p_receiver_card_ids: receiverCardIds,
+    p_note: note || null
+  });
+
+  if (rpcError || !tradeId) {
+    return NextResponse.json({ error: rpcError?.message ?? "Failed to create trade." }, { status: 400 });
   }
 
-  return NextResponse.json({ ok: true, tradeId: trade.id });
+  return NextResponse.json({ ok: true, tradeId });
 }

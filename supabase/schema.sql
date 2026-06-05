@@ -446,3 +446,144 @@ drop policy if exists "Users create own verification proofs" on public.verificat
 drop policy if exists "Reputation events are readable" on public.reputation_events;
 create policy "Reputation events are readable" on public.reputation_events
 for select using (true);
+
+-- Admin overrides, gated by users.is_admin. Codified to match the live database
+-- so rebuilds from this file are predictable.
+drop policy if exists "Admins read all trades" on public.trades;
+create policy "Admins read all trades" on public.trades
+for select using (exists (select 1 from public.users u where u.id = auth.uid() and u.is_admin = true));
+
+drop policy if exists "Admins update all trades" on public.trades;
+create policy "Admins update all trades" on public.trades
+for update using (exists (select 1 from public.users u where u.id = auth.uid() and u.is_admin = true));
+
+drop policy if exists "Admins read all user cards" on public.user_cards;
+create policy "Admins read all user cards" on public.user_cards
+for select using (exists (select 1 from public.users u where u.id = auth.uid() and u.is_admin = true));
+
+drop policy if exists "Admins update user card verification" on public.user_cards;
+create policy "Admins update user card verification" on public.user_cards
+for update using (exists (select 1 from public.users u where u.id = auth.uid() and u.is_admin = true));
+
+drop policy if exists "Admins read all verification proofs" on public.verification_proofs;
+create policy "Admins read all verification proofs" on public.verification_proofs
+for select using (exists (select 1 from public.users u where u.id = auth.uid() and u.is_admin = true));
+
+drop policy if exists "Admins update verification proofs" on public.verification_proofs;
+create policy "Admins update verification proofs" on public.verification_proofs
+for update using (exists (select 1 from public.users u where u.id = auth.uid() and u.is_admin = true));
+
+-- ---------------------------------------------------------------------------
+-- Atomic trade creation (trade + items + note in one transaction).
+-- ---------------------------------------------------------------------------
+create or replace function public.create_trade_atomic(
+  p_proposer_id uuid,
+  p_receiver_id uuid,
+  p_proposer_card_ids uuid[],
+  p_receiver_card_ids uuid[],
+  p_note text default null
+) returns uuid
+language plpgsql
+security definer
+set search_path = ''
+as $function$
+declare
+  v_trade_id uuid;
+  v_id uuid;
+begin
+  if p_proposer_id = p_receiver_id then
+    raise exception 'proposer and receiver must differ';
+  end if;
+  if coalesce(array_length(p_proposer_card_ids, 1), 0) = 0
+     or coalesce(array_length(p_receiver_card_ids, 1), 0) = 0 then
+    raise exception 'both sides require at least one card';
+  end if;
+
+  if exists (
+    select 1 from unnest(p_proposer_card_ids) as cid
+    where not exists (
+      select 1 from public.user_cards uc
+      where uc.id = cid and uc.user_id = p_proposer_id
+        and uc.trade_eligible = true
+        and uc.verification_status in ('verified', 'wallet_verified')
+    )
+  ) then
+    raise exception 'invalid proposer card';
+  end if;
+
+  if exists (
+    select 1 from unnest(p_receiver_card_ids) as cid
+    where not exists (
+      select 1 from public.user_cards uc
+      where uc.id = cid and uc.user_id = p_receiver_id
+        and uc.status = 'for_trade'
+        and uc.trade_eligible = true
+        and uc.verification_status in ('verified', 'wallet_verified')
+    )
+  ) then
+    raise exception 'invalid receiver card';
+  end if;
+
+  insert into public.trades (proposer_id, receiver_id, status)
+  values (p_proposer_id, p_receiver_id, 'sent')
+  returning id into v_trade_id;
+
+  foreach v_id in array p_proposer_card_ids loop
+    insert into public.trade_items (trade_id, user_card_id, side) values (v_trade_id, v_id, 'proposer');
+  end loop;
+  foreach v_id in array p_receiver_card_ids loop
+    insert into public.trade_items (trade_id, user_card_id, side) values (v_trade_id, v_id, 'receiver');
+  end loop;
+
+  if p_note is not null and length(btrim(p_note)) > 0 then
+    insert into public.messages (trade_id, sender_id, body)
+    values (v_trade_id, p_proposer_id, left(btrim(p_note), 4000));
+  end if;
+
+  return v_trade_id;
+end;
+$function$;
+
+revoke execute on function public.create_trade_atomic(uuid, uuid, uuid[], uuid[], text) from public;
+revoke execute on function public.create_trade_atomic(uuid, uuid, uuid[], uuid[], text) from anon;
+revoke execute on function public.create_trade_atomic(uuid, uuid, uuid[], uuid[], text) from authenticated;
+
+-- ---------------------------------------------------------------------------
+-- Distributed fixed-window API rate limiter.
+-- ---------------------------------------------------------------------------
+create table if not exists public.api_rate_limits (
+  bucket_key text not null,
+  window_start timestamptz not null,
+  hits integer not null default 0,
+  primary key (bucket_key, window_start)
+);
+
+alter table public.api_rate_limits enable row level security;
+
+create or replace function public.check_rate_limit(p_key text, p_limit integer, p_window_seconds integer)
+returns boolean
+language plpgsql
+security definer
+set search_path = ''
+as $function$
+declare
+  v_window timestamptz := to_timestamp(floor(extract(epoch from now()) / p_window_seconds) * p_window_seconds);
+  v_hits integer;
+begin
+  insert into public.api_rate_limits (bucket_key, window_start, hits)
+  values (p_key, v_window, 1)
+  on conflict (bucket_key, window_start)
+  do update set hits = public.api_rate_limits.hits + 1
+  returning hits into v_hits;
+
+  if random() < 0.01 then
+    delete from public.api_rate_limits where window_start < now() - interval '1 hour';
+  end if;
+
+  return v_hits <= p_limit;
+end;
+$function$;
+
+revoke execute on function public.check_rate_limit(text, integer, integer) from public;
+revoke execute on function public.check_rate_limit(text, integer, integer) from anon;
+revoke execute on function public.check_rate_limit(text, integer, integer) from authenticated;

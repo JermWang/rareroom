@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { WalletChain, buildWalletChallengeMessage, normalizeWalletAddress } from "@/lib/wallet-challenge";
+import { rateLimit, rateLimitKey } from "@/lib/rate-limit";
 
 type ChallengeBody = {
   address?: string;
@@ -37,6 +38,10 @@ export async function POST(req: NextRequest) {
   } = await supabase.auth.getUser();
   if (!user) {
     return NextResponse.json({ error: "Sign in before linking a wallet." }, { status: 401 });
+  }
+
+  if (!(await rateLimit(rateLimitKey(req, "wallet-challenge", user.id), 20, 60))) {
+    return NextResponse.json({ error: "Too many wallet attempts. Please wait a moment." }, { status: 429 });
   }
 
   const challengeId = randomUUID();

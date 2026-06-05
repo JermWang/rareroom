@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { rateLimit, rateLimitKey } from "@/lib/rate-limit";
 
 async function getUserAndAdmin() {
   const supabase = await createSupabaseServerClient();
@@ -78,6 +79,10 @@ export async function POST(req: NextRequest) {
   const ctx = await getUserAndAdmin();
   if (!ctx) {
     return NextResponse.json({ error: "Sign in to send messages." }, { status: 401 });
+  }
+
+  if (!(await rateLimit(rateLimitKey(req, "messages", ctx.user.id), 30, 60))) {
+    return NextResponse.json({ error: "You're sending messages too fast. Please slow down." }, { status: 429 });
   }
 
   const trade = await assertParticipant(ctx.admin, tradeId, ctx.user.id);

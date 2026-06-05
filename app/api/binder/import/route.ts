@@ -3,6 +3,7 @@ import type { CardStatus, VerificationStatus } from "@/lib/data";
 import { StoredCard } from "@/lib/import";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { rateLimit, rateLimitKey } from "@/lib/rate-limit";
 
 const allowedStatuses = new Set<CardStatus>(["owned", "for_trade", "wishlist", "locked"]);
 
@@ -38,6 +39,10 @@ export async function POST(req: NextRequest) {
   } = await supabase.auth.getUser();
   if (!user) {
     return NextResponse.json({ error: "Sign in to save cards to your online binder." }, { status: 401 });
+  }
+
+  if (!(await rateLimit(rateLimitKey(req, "binder-import", user.id), 10, 60))) {
+    return NextResponse.json({ error: "Too many imports in a short time. Please wait a minute." }, { status: 429 });
   }
 
   let count = 0;

@@ -3,6 +3,7 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { sanitizeProofUrl } from "@/lib/proof-url";
 import { TrustedProviderId, trustedVerificationProviders } from "@/lib/trusted-verification";
+import { rateLimit, rateLimitKey } from "@/lib/rate-limit";
 
 type TrustedSourceBody = {
   userCardId?: string;
@@ -53,6 +54,10 @@ export async function POST(req: NextRequest) {
   } = await supabase.auth.getUser();
   if (!user) {
     return NextResponse.json({ error: "Sign in before validating a card." }, { status: 401 });
+  }
+
+  if (!(await rateLimit(rateLimitKey(req, "verify-source", user.id), 30, 60))) {
+    return NextResponse.json({ error: "Too many verification attempts. Please slow down." }, { status: 429 });
   }
 
   const { data: card, error: cardError } = await admin

@@ -147,6 +147,7 @@ export async function fetchMarketplaceListings(): Promise<MarketplaceListing[] |
     `
     )
     .eq("status", "for_trade")
+    .eq("trade_eligible", true)
     .in("verification_status", ["verified", "wallet_verified"])
     .order("created_at", { ascending: false })
     .limit(100);

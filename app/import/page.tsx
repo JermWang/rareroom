@@ -54,7 +54,7 @@ function Thumb({ src, alt, type }: { src?: string; alt: string; type?: MatchedRo
   const palette = type ? typePalette[type] : null;
   if (!src) {
     return (
-      <div className="grid aspect-[5/7] w-12 place-items-center rounded-md border border-white/12 bg-white/[0.04] text-white/30">
+      <div className="grid aspect-[5/7] w-12 place-items-center rounded-md border border-[var(--line)] bg-[rgba(23,58,99,0.04)] text-[var(--muted)]">
         <X size={16} />
       </div>
     );
@@ -257,19 +257,19 @@ export default function ImportPage() {
           title="Connect your collection"
           copy="Start from the places you already hold cards: PTCG Live, TCG Pocket, Collectr, Pokellector, and marketplace inventory exports. RareRoom bulk-matches your collection first; trusted source validation is required before anything can be traded."
           action={
-            <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-line bg-white/[0.05] px-3 py-2 text-xs font-black text-white/72">
-              <input type="checkbox" checked={pocket} onChange={(e) => setPocket(e.target.checked)} className="accent-volt" />
+            <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-[var(--line)] bg-[rgba(23,58,99,0.05)] px-3 py-2 text-xs font-black text-[var(--navy)]">
+              <input type="checkbox" checked={pocket} onChange={(e) => setPocket(e.target.checked)} className="accent-[var(--sun-deep)]" />
               TCG Pocket mode
             </label>
           }
         />
 
-        <div className="mb-5 flex items-start gap-3 rounded-xl border border-line bg-white/[0.045] p-4 text-sm leading-6 text-[var(--muted)]">
-          <Info size={18} className="mt-0.5 shrink-0 text-sky" />
+        <div className="mb-5 flex items-start gap-3 rounded-xl border border-[var(--line)] bg-[rgba(23,58,99,0.04)] p-4 text-sm leading-6 text-[var(--muted)]">
+          <Info size={18} className="mt-0.5 shrink-0 text-[var(--sky-deep)]" />
           <p>
             Best path: connect a collection source or upload a provider export, then let RareRoom match everything automatically. Screenshots and
             manual search can identify cards, but they never approve a trade. Card metadata from{" "}
-            <a href="https://tcgdex.dev" target="_blank" rel="noreferrer" className="font-black text-volt underline">
+            <a href="https://tcgdex.dev" target="_blank" rel="noreferrer" className="font-black text-[var(--sun-deep)] underline">
               TCGdex
             </a>{" "}
             includes TCG Pocket.
@@ -288,7 +288,7 @@ export default function ImportPage() {
                     onClick={() => setTab(t.id)}
                     className={cx(
                       "inline-flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm font-black transition",
-                      tab === t.id ? "bg-volt text-ink" : "bg-white/8 text-white/58 hover:text-white"
+                      tab === t.id ? "bg-[var(--sun)] text-[var(--navy)]" : "bg-[rgba(23,58,99,0.05)] text-[var(--muted)] hover:text-[var(--navy)]"
                     )}
                   >
                     <Icon size={15} />
@@ -303,8 +303,8 @@ export default function ImportPage() {
               {tab === "connect" && (
                 <div>
                   <div className="mb-5 max-w-2xl">
-                    <h2 className="font-black text-white">Choose where your cards already live</h2>
-                    <p className="mt-2 text-sm font-bold leading-6 text-white/52">
+                    <h2 className="font-black text-[var(--navy)]">Choose where your cards already live</h2>
+                    <p className="mt-2 text-sm font-bold leading-6 text-[var(--muted)]">
                       Prioritize account-backed imports so collectors can move an existing digital collection into RareRoom in minutes and validate it before trading.
                     </p>
                   </div>
@@ -318,16 +318,16 @@ export default function ImportPage() {
                             if (source.pocket) setPocket(true);
                             setTab(source.tab);
                           }}
-                          className="group rounded-2xl border border-white/12 bg-white/[0.045] p-4 text-left transition hover:border-volt/55 hover:bg-white/[0.07]"
+                          className="group rounded-2xl border border-[var(--line)] bg-[rgba(23,58,99,0.04)] p-4 text-left transition hover:border-[var(--sun)] hover:bg-[rgba(23,58,99,0.07)]"
                         >
                           <div className="flex items-start gap-3">
-                            <span className="grid size-10 shrink-0 place-items-center rounded-full border border-white/14 bg-white/[0.06] text-volt">
+                            <span className="grid size-10 shrink-0 place-items-center rounded-full border border-[var(--line)] bg-[rgba(23,58,99,0.05)] text-[var(--sun-deep)]">
                               <Icon size={19} />
                             </span>
                             <div>
-                              <h3 className="font-black text-white">{source.name}</h3>
-                              <p className="mt-1 text-sm font-bold leading-5 text-white/52">{source.detail}</p>
-                              <span className="mt-4 inline-flex rounded-full bg-volt px-3 py-1 text-xs font-black text-ink transition group-hover:-translate-y-0.5">
+                              <h3 className="font-black text-[var(--navy)]">{source.name}</h3>
+                              <p className="mt-1 text-sm font-bold leading-5 text-[var(--muted)]">{source.detail}</p>
+                              <span className="mt-4 inline-flex rounded-full bg-[var(--sun)] px-3 py-1 text-xs font-black text-[var(--navy)] transition group-hover:-translate-y-0.5">
                                 {source.action}
                               </span>
                             </div>
@@ -342,19 +342,19 @@ export default function ImportPage() {
               {tab === "paste" && (
                 <div>
                   <div className="mb-2 flex items-center justify-between">
-                    <h2 className="font-black text-white">Paste an exported collection list</h2>
-                    <button onClick={() => setPasteText(SAMPLE)} className="text-xs font-black text-volt hover:underline">
+                    <h2 className="font-black text-[var(--navy)]">Paste an exported collection list</h2>
+                    <button onClick={() => setPasteText(SAMPLE)} className="text-xs font-black text-[var(--sun-deep)] hover:underline">
                       Use sample
                     </button>
                   </div>
-                  <p className="mb-3 text-xs leading-5 text-white/48">
+                  <p className="mb-3 text-xs leading-5 text-[var(--muted)]">
                     Paste from PTCG Live, pkmn.gg, TCG Pocket notes, or another tracker. This imports and matches cards; trade approval still requires a trusted source connection.
                   </p>
                   <textarea
                     value={pasteText}
                     onChange={(e) => setPasteText(e.target.value)}
                     placeholder={SAMPLE}
-                    className="min-h-44 w-full rounded-lg border border-line bg-white/[0.05] p-3 font-mono text-sm text-white outline-none placeholder:text-white/30"
+                    className="min-h-44 w-full rounded-lg border border-[var(--line)] bg-[rgba(23,58,99,0.05)] p-3 font-mono text-sm text-[var(--navy)] outline-none placeholder:text-[var(--muted)]"
                   />
                   <Button className="mt-3" onClick={() => ingest(parsePaste(pasteText))}>
                     <Sparkles size={16} />
@@ -365,13 +365,13 @@ export default function ImportPage() {
 
               {tab === "csv" && (
                 <div>
-                  <h2 className="mb-2 font-black text-white">Upload a collection export</h2>
-                  <p className="mb-3 text-xs leading-5 text-white/48">
+                  <h2 className="mb-2 font-black text-[var(--navy)]">Upload a collection export</h2>
+                  <p className="mb-3 text-xs leading-5 text-[var(--muted)]">
                     Works with Collectr, Pokellector, TCGplayer-style exports, and any tracker with Name, Set, Number, and Quantity columns. CSVs are import evidence, not trade-grade validation.
                   </p>
                   <button
                     onClick={() => fileRef.current?.click()}
-                    className="flex min-h-36 w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-white/20 bg-white/[0.03] text-sm font-black text-white/56 transition hover:border-volt/45 hover:text-volt"
+                    className="flex min-h-36 w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-[var(--line)] bg-[rgba(23,58,99,0.03)] text-sm font-black text-[var(--muted)] transition hover:border-[var(--sun)] hover:text-[var(--sun-deep)]"
                   >
                     <Upload size={22} />
                     Choose CSV file
@@ -391,20 +391,20 @@ export default function ImportPage() {
 
               {tab === "search" && (
                 <div>
-                  <h2 className="mb-2 font-black text-white">Manual fallback search</h2>
-                  <p className="mb-3 text-xs leading-5 text-white/48">
+                  <h2 className="mb-2 font-black text-[var(--navy)]">Manual fallback search</h2>
+                  <p className="mb-3 text-xs leading-5 text-[var(--muted)]">
                     Use this only to fix a missing match or add a single card. Bulk source imports should be the default.
                   </p>
-                  <div className="flex min-h-12 items-center gap-3 rounded-lg border border-line bg-white/[0.055] px-3">
-                    <Search size={18} className="text-white/44" />
+                  <div className="flex min-h-12 items-center gap-3 rounded-lg border border-[var(--line)] bg-[rgba(23,58,99,0.05)] px-3">
+                    <Search size={18} className="text-[var(--muted)]" />
                     <input
                       value={searchQ}
                       onChange={(e) => setSearchQ(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && runSearch()}
                       placeholder={pocket ? "Search TCG Pocket cards…" : "Search any Pokémon card…"}
-                      className="w-full bg-transparent text-sm font-semibold text-white outline-none placeholder:text-white/36"
+                      className="w-full bg-transparent text-sm font-semibold text-[var(--navy)] outline-none placeholder:text-[var(--muted)]"
                     />
-                    <button onClick={runSearch} className="text-xs font-black text-volt">
+                    <button onClick={runSearch} className="text-xs font-black text-[var(--sun-deep)]">
                       {searching ? <Loader2 size={16} className="animate-spin" /> : "Search"}
                     </button>
                   </div>
@@ -415,11 +415,11 @@ export default function ImportPage() {
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img src={r.image} alt={r.name} loading="lazy" className="h-full w-full object-cover" />
                         </div>
-                        <div className="mt-1 truncate text-[11px] font-bold text-white/70">{r.name}</div>
+                        <div className="mt-1 truncate text-[11px] font-bold text-[var(--navy)]">{r.name}</div>
                       </button>
                     ))}
                     {!searching && results.length === 0 ? (
-                      <p className="col-span-full text-sm text-white/40">Search only when a source import misses something.</p>
+                      <p className="col-span-full text-sm text-[var(--muted)]">Search only when a source import misses something.</p>
                     ) : null}
                   </div>
                 </div>
@@ -427,12 +427,12 @@ export default function ImportPage() {
 
               {tab === "scan" && (
                 <div className="grid place-items-center py-10 text-center">
-                  <Smartphone size={40} className="text-white/35" />
-                  <h2 className="mt-4 text-lg font-black text-white">Scan to identify</h2>
-                  <p className="mt-2 max-w-sm text-sm leading-6 text-white/52">
+                  <Smartphone size={40} className="text-[var(--muted)]" />
+                  <h2 className="mt-4 text-lg font-black text-[var(--navy)]">Scan to identify</h2>
+                  <p className="mt-2 max-w-sm text-sm leading-6 text-[var(--muted)]">
                     Use the camera only to recognize card names and set numbers. It will not validate ownership or make a card trade eligible.
                   </p>
-                  <span className="mt-4 rounded-lg bg-white/8 px-3 py-1.5 text-xs font-black text-white/55">Coming soon</span>
+                  <span className="mt-4 rounded-lg bg-[rgba(23,58,99,0.05)] px-3 py-1.5 text-xs font-black text-[var(--muted)]">Coming soon</span>
                 </div>
               )}
             </div>
@@ -441,7 +441,7 @@ export default function ImportPage() {
             {rows.length > 0 && (
               <div className="glass mt-5 rounded-2xl p-5">
                 <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-                  <h2 className="font-black text-white">Review {rows.length} cards</h2>
+                  <h2 className="font-black text-[var(--navy)]">Review {rows.length} cards</h2>
                   <div className="flex items-center gap-2">
                     {unmatchedCount > 0 && (
                       <Button variant="secondary" onClick={autoMatchOnline} disabled={enriching}>
@@ -454,18 +454,18 @@ export default function ImportPage() {
 
                 <div className="space-y-2">
                   {rows.map((r) => (
-                    <div key={r.key} className="flex items-center gap-3 rounded-lg border border-line bg-white/[0.035] p-2.5">
+                    <div key={r.key} className="flex items-center gap-3 rounded-lg border border-[var(--line)] bg-[rgba(23,58,99,0.04)] p-2.5">
                       <Thumb src={r.imageUrl} alt={r.name} type={r.type} />
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
-                          <span className="truncate text-sm font-black text-white">{r.matchName ?? r.name}</span>
+                          <span className="truncate text-sm font-black text-[var(--navy)]">{r.matchName ?? r.name}</span>
                           {r.imageUrl ? (
-                            <BadgeCheck size={14} className="shrink-0 text-mint" />
+                            <BadgeCheck size={14} className="shrink-0 text-[var(--mint)]" />
                           ) : (
-                            <span className="shrink-0 rounded bg-danger/15 px-1.5 py-0.5 text-[9px] font-black text-danger">No match</span>
+                            <span className="shrink-0 rounded bg-[#fdecec] px-1.5 py-0.5 text-[9px] font-black text-[var(--red)]">No match</span>
                           )}
                         </div>
-                        <div className="truncate text-xs text-white/45">
+                        <div className="truncate text-xs text-[var(--muted)]">
                           {[r.setName ?? r.set, r.number].filter(Boolean).join(" · ") || (r.imageUrl ? "Matched" : "Try auto-match or search")}
                         </div>
                       </div>
@@ -474,12 +474,12 @@ export default function ImportPage() {
                         min={1}
                         value={r.qty}
                         onChange={(e) => updateRow(r.key, { qty: Math.max(1, parseInt(e.target.value, 10) || 1) })}
-                        className="w-14 rounded-md border border-line bg-white/[0.05] px-2 py-1 text-center text-sm font-bold text-white outline-none"
+                        className="w-14 rounded-md border border-[var(--line)] bg-[rgba(23,58,99,0.05)] px-2 py-1 text-center text-sm font-bold text-[var(--navy)] outline-none"
                       />
                       <select
                         value={r.status}
                         onChange={(e) => updateRow(r.key, { status: e.target.value as ImportStatus })}
-                        className="rounded-md border border-line bg-ink px-2 py-1.5 text-xs font-bold text-white/72 outline-none"
+                        className="rounded-md border border-[var(--line)] bg-white px-2 py-1.5 text-xs font-bold text-[var(--navy)] outline-none"
                       >
                         {statusOptions.map((o) => (
                           <option key={o.value} value={o.value}>
@@ -487,17 +487,17 @@ export default function ImportPage() {
                           </option>
                         ))}
                       </select>
-                      <button onClick={() => removeRow(r.key)} className="grid size-8 place-items-center rounded-md text-white/40 hover:bg-white/8 hover:text-danger">
+                      <button onClick={() => removeRow(r.key)} className="grid size-8 place-items-center rounded-md text-[var(--muted)] hover:bg-[rgba(23,58,99,0.05)] hover:text-[var(--red)]">
                         <Trash2 size={15} />
                       </button>
                     </div>
                   ))}
                 </div>
 
-                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line bg-white/[0.04] p-3 text-sm">
-                  <div className="flex flex-wrap gap-4 font-bold text-white/60">
-                    <span className="text-mint">{matchedCount} matched</span>
-                    {unmatchedCount > 0 && <span className="text-danger">{unmatchedCount} unmatched</span>}
+                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[var(--line)] bg-[rgba(23,58,99,0.04)] p-3 text-sm">
+                  <div className="flex flex-wrap gap-4 font-bold text-[var(--muted)]">
+                    <span className="text-[var(--mint)]">{matchedCount} matched</span>
+                    {unmatchedCount > 0 && <span className="text-[var(--red)]">{unmatchedCount} unmatched</span>}
                     <span>{totalCards} cards total</span>
                   </div>
                 <Button onClick={addToBinder} disabled={matchedCount === 0 || saving}>
@@ -512,7 +512,7 @@ export default function ImportPage() {
           {/* Right rail */}
           <aside className="space-y-4">
             {savedCount > 0 && (
-              <div className="flex items-center gap-2 rounded-xl border border-mint/30 bg-mint/10 p-3 text-sm font-black text-mint">
+              <div className="flex items-center gap-2 rounded-xl border border-[#5fe0c2] bg-[#d7f7ee] p-3 text-sm font-black text-[var(--mint)]">
                 <CheckCircle2 size={18} />
                 {saveMessage || `Added ${savedCount} cards to your binder.`}
               </div>
@@ -525,15 +525,15 @@ export default function ImportPage() {
 
             <div className="glass rounded-2xl p-4">
               <div className="mb-3 flex items-center justify-between">
-                <h3 className="font-black text-white">Imported collection</h3>
+                <h3 className="font-black text-[var(--navy)]">Imported collection</h3>
                 {imported.length > 0 && (
-                  <button onClick={clearImported} className="text-xs font-black text-white/45 hover:text-danger">
+                  <button onClick={clearImported} className="text-xs font-black text-[var(--muted)] hover:text-[var(--red)]">
                     Clear
                   </button>
                 )}
               </div>
               {imported.length === 0 ? (
-                <p className="text-sm text-white/45">Nothing imported yet. Matched cards you add will be saved here (and to your binder).</p>
+                <p className="text-sm text-[var(--muted)]">Nothing imported yet. Matched cards you add will be saved here (and to your binder).</p>
               ) : (
                 <div className="grid grid-cols-4 gap-2">
                   {imported.slice(0, 16).map((c) => (
@@ -541,13 +541,13 @@ export default function ImportPage() {
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={c.imageUrl} alt={c.name} loading="lazy" className="h-full w-full object-cover" />
                       {c.qty > 1 && (
-                        <span className="absolute bottom-0.5 right-0.5 rounded bg-ink/85 px-1 text-[9px] font-black text-volt">×{c.qty}</span>
+                        <span className="absolute bottom-0.5 right-0.5 rounded bg-white/85 px-1 text-[9px] font-black text-[var(--sun-deep)]">×{c.qty}</span>
                       )}
                     </div>
                   ))}
                 </div>
               )}
-              <p className="mt-3 text-[11px] leading-5 text-white/35">
+              <p className="mt-3 text-[11px] leading-5 text-[var(--muted)]">
                 {supabase
                   ? "Signed-in imports save to your online binder. Guests keep a local copy on this device."
                   : `Saved to this device (${IMPORT_STORAGE_KEY}). Add Supabase env vars to enable online binders.`}
@@ -555,8 +555,8 @@ export default function ImportPage() {
             </div>
 
             <div className="glass rounded-2xl p-4">
-              <h3 className="mb-2 font-black text-white">Supported sources</h3>
-              <ul className="space-y-1.5 text-sm text-white/58">
+              <h3 className="mb-2 font-black text-[var(--navy)]">Supported sources</h3>
+              <ul className="space-y-1.5 text-sm text-[var(--muted)]">
                 <li>Trade-grade: TCGplayer seller inventory connection</li>
                 <li>Trade-grade: PriceCharting collection or offer connection</li>
                 <li>Trade-grade: Collectr / Pokellector partner attestation</li>

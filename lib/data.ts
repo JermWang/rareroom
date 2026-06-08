@@ -417,11 +417,11 @@ export const rarityRank: Record<PackRarity, number> = {
 
 // Tailwind classes used for rarity glow + accent so reveal effects scale with pull value.
 export const rarityStyle: Record<PackRarity, { glow: string; text: string; ring: string }> = {
-  Common: { glow: "shadow-[0_0_0_rgba(0,0,0,0)]", text: "text-white/70", ring: "ring-white/15" },
-  Uncommon: { glow: "shadow-[0_0_30px_rgba(95,184,255,0.35)]", text: "text-sky", ring: "ring-sky/40" },
-  Rare: { glow: "shadow-[0_0_40px_rgba(70,244,199,0.4)]", text: "text-mint", ring: "ring-mint/45" },
-  "Ultra Rare": { glow: "shadow-[0_0_55px_rgba(255,216,77,0.5)]", text: "text-volt", ring: "ring-volt/55" },
-  "Crown Rare": { glow: "shadow-[0_0_70px_rgba(213,128,255,0.6)]", text: "text-purple-300", ring: "ring-purple-300/60" }
+  Common: { glow: "shadow-[0_0_0_rgba(0,0,0,0)]", text: "text-[var(--muted)]", ring: "ring-white/15" },
+  Uncommon: { glow: "shadow-[0_0_30px_rgba(95,184,255,0.35)]", text: "text-[var(--sky-deep)]", ring: "ring-sky/40" },
+  Rare: { glow: "shadow-[0_0_40px_rgba(70,244,199,0.4)]", text: "text-[var(--mint)]", ring: "ring-mint/45" },
+  "Ultra Rare": { glow: "shadow-[0_0_55px_rgba(255,216,77,0.5)]", text: "text-[var(--sun-deep)]", ring: "ring-volt/55" },
+  "Crown Rare": { glow: "shadow-[0_0_70px_rgba(213,128,255,0.6)]", text: "text-[#7c3aed]", ring: "ring-purple-300/60" }
 };
 
 export type PackTier = {

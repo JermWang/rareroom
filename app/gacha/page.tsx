@@ -136,15 +136,15 @@ export default function GachaPage() {
           title="Pack Opening"
           copy="Open binder draft packs, reveal cards one by one, and decide what to keep, trade, archive, or convert to points."
           action={
-            <div className="flex items-center gap-2 rounded-lg border border-volt/30 bg-volt/12 px-3 py-2 text-sm font-black text-volt">
+            <div className="flex items-center gap-2 rounded-lg border border-[var(--sun)] bg-[#fff2cf] px-3 py-2 text-sm font-black text-[var(--sun-deep)]">
               <Coins size={16} />
               {points.toLocaleString()} points
             </div>
           }
         />
 
-        <div className="mb-5 flex items-start gap-3 rounded-xl border border-line bg-white/[0.045] p-4 text-sm leading-6 text-[var(--muted)]">
-          <Info size={18} className="mt-0.5 shrink-0 text-sky" />
+        <div className="mb-5 flex items-start gap-3 rounded-xl border border-[var(--line)] bg-[rgba(23,58,99,0.04)] p-4 text-sm leading-6 text-[var(--muted)]">
+          <Info size={18} className="mt-0.5 shrink-0 text-[var(--sky-deep)]" />
           <p>
             <span className="font-black text-[var(--navy)]">Collector pack simulation.</span> These are simulated binder draft packs, not official Pokémon
             products. Pulls add fan-made collector cards to your binder for trading practice.
@@ -155,7 +155,7 @@ export default function GachaPage() {
           {/* Pack picker */}
           <div className="space-y-4">
             <div className="glass rounded-2xl p-4">
-              <h2 className="mb-3 font-black text-white">Choose a pack</h2>
+              <h2 className="mb-3 font-black text-[var(--navy)]">Choose a pack</h2>
               <div className="space-y-3">
                 {packTiers.map((option) => (
                   <button
@@ -163,21 +163,21 @@ export default function GachaPage() {
                     onClick={() => !opening && setTier(option)}
                     className={cx(
                       "w-full rounded-xl border p-3 text-left transition",
-                      tier.id === option.id ? "border-volt/55 bg-volt/10" : "border-line bg-white/[0.04] hover:border-white/25"
+                      tier.id === option.id ? "border-[var(--sun)] bg-[#fff2cf]" : "border-[var(--line)] bg-[rgba(23,58,99,0.04)] hover:border-[var(--line)]"
                     )}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-black text-white">{option.name}</span>
-                      <Gift size={18} className={tier.id === option.id ? "text-volt" : "text-white/40"} />
+                      <span className="font-black text-[var(--navy)]">{option.name}</span>
+                      <Gift size={18} className={tier.id === option.id ? "text-[var(--sun-deep)]" : "text-[var(--muted)]"} />
                     </div>
-                    <p className="mt-1 text-xs text-white/50">{option.subtitle}</p>
+                    <p className="mt-1 text-xs text-[var(--muted)]">{option.subtitle}</p>
                     <div className="mt-3 flex flex-wrap gap-1.5">
                       {(Object.entries(option.weights) as [PackRarity, number][])
                         .filter(([, w]) => w > 0)
                         .map(([rarity, w]) => {
                           const total = Object.values(option.weights).reduce((s, v) => s + v, 0);
                           return (
-                            <span key={rarity} className={cx("rounded-md bg-white/8 px-1.5 py-0.5 text-[10px] font-black", rarityStyle[rarity].text)}>
+                            <span key={rarity} className={cx("rounded-md bg-[rgba(23,58,99,0.05)] px-1.5 py-0.5 text-[10px] font-black", rarityStyle[rarity].text)}>
                               {rarity} {((w / total) * 100).toFixed(rarity === "Crown Rare" || rarity === "Ultra Rare" ? 1 : 0)}%
                             </span>
                           );
@@ -190,16 +190,16 @@ export default function GachaPage() {
 
             <div className="glass rounded-2xl p-4">
               <div className="mb-3 flex items-center gap-2">
-                <History size={18} className="text-mint" />
-                <h2 className="font-black text-white">Pull history</h2>
+                <History size={18} className="text-[var(--mint)]" />
+                <h2 className="font-black text-[var(--navy)]">Pull history</h2>
               </div>
               {history.length === 0 ? (
-                <p className="text-sm text-white/45">No pulls yet. Open your first pack to start a history.</p>
+                <p className="text-sm text-[var(--muted)]">No pulls yet. Open your first pack to start a history.</p>
               ) : (
                 <div className="max-h-64 space-y-1.5 overflow-y-auto pr-1">
                   {history.map((entry, index) => (
-                    <div key={index} className="flex items-center justify-between rounded-lg border border-line bg-white/[0.035] px-3 py-2 text-xs">
-                      <span className="truncate font-bold text-white/75">{entry.name}</span>
+                    <div key={index} className="flex items-center justify-between rounded-lg border border-[var(--line)] bg-[rgba(23,58,99,0.04)] px-3 py-2 text-xs">
+                      <span className="truncate font-bold text-[var(--navy)]">{entry.name}</span>
                       <span className={cx("ml-2 shrink-0 font-black", rarityStyle[entry.rarity].text)}>{entry.rarity}</span>
                     </div>
                   ))}
@@ -213,12 +213,12 @@ export default function GachaPage() {
             {pulls.length === 0 ? (
               <div className="flex min-h-[420px] flex-col items-center justify-center text-center">
                 <div className="pack-float relative grid place-items-center">
-                  <div className={cx("grid aspect-[5/7] w-44 place-items-center rounded-2xl border border-white/20 bg-gradient-to-br p-4 shadow-card holo", tier.accent)}>
-                    <Sparkles size={56} className="text-white drop-shadow" />
+                  <div className={cx("grid aspect-[5/7] w-44 place-items-center rounded-2xl border border-[rgba(255,255,255,0.28)] bg-gradient-to-br p-4 shadow-card holo", tier.accent)}>
+                    <Sparkles size={56} className="text-[#ffffff] drop-shadow" />
                   </div>
                 </div>
-                <h2 className="mt-6 text-2xl font-black text-white">{tier.name}</h2>
-                <p className="mt-1 text-sm text-white/55">{tier.subtitle}</p>
+                <h2 className="mt-6 text-2xl font-black text-[var(--navy)]">{tier.name}</h2>
+                <p className="mt-1 text-sm text-[var(--muted)]">{tier.subtitle}</p>
                 <Button className="mt-6" onClick={openPack}>
                   <Sparkles size={17} />
                   Open pack
@@ -228,15 +228,15 @@ export default function GachaPage() {
               <div>
                 <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                   <div className="flex items-center gap-2">
-                    <h2 className="text-xl font-black text-white">{opening ? "Revealing…" : "Your pulls"}</h2>
+                    <h2 className="text-xl font-black text-[var(--navy)]">{opening ? "Revealing…" : "Your pulls"}</h2>
                     {allRevealed && bestPull ? (
-                      <span className={cx("inline-flex items-center gap-1 rounded-md bg-white/8 px-2 py-1 text-xs font-black", rarityStyle[bestPull].text)}>
+                      <span className={cx("inline-flex items-center gap-1 rounded-md bg-[rgba(23,58,99,0.05)] px-2 py-1 text-xs font-black", rarityStyle[bestPull].text)}>
                         <Star size={12} />
                         Best: {bestPull}
                       </span>
                     ) : null}
                   </div>
-                  <span className="text-xs font-bold text-white/45">
+                  <span className="text-xs font-bold text-[var(--muted)]">
                     {Math.min(revealed, pulls.length)} / {pulls.length} revealed
                   </span>
                 </div>
@@ -254,12 +254,12 @@ export default function GachaPage() {
                             </div>
                             <div className="mt-1.5 flex items-center justify-between gap-1">
                               <span className={cx("truncate text-[11px] font-black", style.text)}>{card.packRarity}</span>
-                              {card.isDuplicate ? <span className="shrink-0 rounded bg-white/10 px-1 text-[9px] font-black text-white/55">DUPE</span> : null}
+                              {card.isDuplicate ? <span className="shrink-0 rounded bg-[rgba(23,58,99,0.06)] px-1 text-[9px] font-black text-[var(--muted)]">DUPE</span> : null}
                             </div>
                           </div>
                         ) : (
-                          <div className="grid aspect-[5/7] place-items-center rounded-lg border border-white/12 bg-white/[0.04]">
-                            <Sparkles size={22} className="animate-pulse text-white/30" />
+                          <div className="grid aspect-[5/7] place-items-center rounded-lg border border-[var(--line)] bg-[rgba(23,58,99,0.04)]">
+                            <Sparkles size={22} className="animate-pulse text-[var(--muted)]" />
                           </div>
                         )}
                       </div>
@@ -269,14 +269,14 @@ export default function GachaPage() {
 
                 {allRevealed ? (
                   <div className="mt-6">
-                    <h3 className="mb-3 text-sm font-black uppercase tracking-wide text-white/55">Handle duplicates & pulls</h3>
+                    <h3 className="mb-3 text-sm font-black uppercase tracking-wide text-[var(--muted)]">Handle duplicates & pulls</h3>
                     <div className="space-y-2">
                       {pulls.map((card) => (
-                        <div key={card.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-line bg-white/[0.035] px-3 py-2">
+                        <div key={card.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[var(--line)] bg-[rgba(23,58,99,0.04)] px-3 py-2">
                           <div className="min-w-0">
-                            <span className="truncate text-sm font-black text-white">{card.name}</span>
+                            <span className="truncate text-sm font-black text-[var(--navy)]">{card.name}</span>
                             <span className={cx("ml-2 text-xs font-bold", rarityStyle[card.packRarity].text)}>{card.packRarity}</span>
-                            {card.isDuplicate ? <span className="ml-2 text-[10px] font-black text-white/45">duplicate</span> : null}
+                            {card.isDuplicate ? <span className="ml-2 text-[10px] font-black text-[var(--muted)]">duplicate</span> : null}
                           </div>
                           <div className="flex gap-1">
                             {([
@@ -290,7 +290,7 @@ export default function GachaPage() {
                                 onClick={() => setDisposition(card.id, value)}
                                 className={cx(
                                   "inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-black transition",
-                                  card.disposition === value ? "bg-volt text-ink" : "bg-white/8 text-white/55 hover:text-white"
+                                  card.disposition === value ? "bg-[var(--sun)] text-[var(--navy)]" : "bg-[rgba(23,58,99,0.05)] text-[var(--muted)] hover:text-[var(--navy)]"
                                 )}
                               >
                                 <Icon size={12} />
@@ -302,11 +302,11 @@ export default function GachaPage() {
                       ))}
                     </div>
 
-                    <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line bg-white/[0.04] p-3 text-sm">
-                      <div className="flex flex-wrap gap-4 font-bold text-white/60">
+                    <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[var(--line)] bg-[rgba(23,58,99,0.04)] p-3 text-sm">
+                      <div className="flex flex-wrap gap-4 font-bold text-[var(--muted)]">
                         <span>{keepCount} kept</span>
                         <span>{tradeCount} for trade</span>
-                        <span className="text-volt">+{pointsPreview} points</span>
+                        <span className="text-[var(--sun-deep)]">+{pointsPreview} points</span>
                       </div>
                       <div className="flex gap-2">
                         <Button variant="secondary" onClick={openPack}>

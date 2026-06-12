@@ -975,6 +975,16 @@ h3 {
   color: var(--navy);
 }
 
+.landing-btn-copy {
+  border-style: dashed;
+}
+
+.landing-btn-copy:disabled {
+  cursor: not-allowed;
+  opacity: 0.68;
+  transform: none;
+}
+
 .strategy-flow {
   display: flex;
   max-width: 620px;

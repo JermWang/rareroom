@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, Search } from "lucide-react";
+import { TokenContractButton } from "@/components/TokenContractButton";
 import { AppPreview, Footer, TradeCycle3D } from "@/components/ui";
 
 // Live market ticker — strictly high-value card price movement (up/down only).
@@ -30,6 +31,8 @@ const trustLines = [
 ];
 
 export default function LandingPage() {
+  const tokenContractAddress = process.env.NEXT_PUBLIC_SPL_TOKEN_CONTRACT_ADDRESS ?? "";
+
   return (
     <div className="landing-page">
       <LandingNav />
@@ -59,6 +62,10 @@ export default function LandingPage() {
                   <Search size={18} />
                   Browse trades
                 </Link>
+                <TokenContractButton
+                  address={tokenContractAddress}
+                  className="landing-btn landing-btn-secondary landing-btn-copy"
+                />
               </div>
               <div className="strategy-flow" aria-label="RareRoom trade flow">
                 <span>Cards imported</span>
